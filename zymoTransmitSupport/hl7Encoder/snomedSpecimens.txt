@@ -1,0 +1,24 @@
+#SNOMED	Full term	Preferred Term
+119334006	Sputum specimen (specimen)	Sputum specimen
+119339001	Stool specimen (specimen)	Stool specimen
+119342007	Saliva specimen (specimen)	Saliva specimen
+119361006	Plasma specimen (specimen)	Plasma specimen
+119364003	Serum specimen (specimen)	Serum specimen
+122575003	Urine specimen (specimen)	Urine specimen
+122610009	Specimen from lung obtained by biopsy (specimen)	Specimen from lung obtained by biopsy
+258411007	Nasopharyngeal aspirate (specimen)	Nasopharyngeal aspirate
+258412000	Oropharyngeal aspirate (specimen)	Oropharyngeal aspirate
+258467004	Nasopharyngeal washings (specimen)	Nasopharyngeal washings
+258500001	Nasopharyngeal swab (specimen)	Nasopharyngeal swab
+258529004	Throat swab (specimen)	Throat swab
+258580003	Whole blood sample (specimen)	Whole blood sample
+258606004	Lower respiratory sample (specimen)	Lower respiratory sample
+258607008	Bronchoalveolar lavage fluid sample (specimen)	Bronchoalveolar lavage fluid sample
+309164002	Upper respiratory swab sample (specimen)	Upper respiratory swab sample
+309171007	Lower respiratory fluid sample (specimen)	Lower respiratory fluid sample
+418564007	Pleural fluid specimen (specimen)	Pleural fluid specimen
+445297001	Swab of internal nose (specimen)	Swab of internal nose
+445447003	Specimen from trachea obtained by aspiration (specimen)	Specimen from trachea obtained by aspiration
+472901003	Swab from nasal sinus (specimen)	Swab from nasal sinus
+697989009	Anterior nares swab (specimen)	Anterior nares swab
+788707000	Plasma specimen or serum specimen or whole blood specimen (specimen)	Plasma specimen or serum specimen or whole blood specimen

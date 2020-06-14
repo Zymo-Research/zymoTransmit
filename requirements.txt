@@ -1,0 +1,4 @@
+pyOpenSSL==19.1.0
+cryptography==2.9.2
+zipcodes==1.1.0
+zeep==3.4.0

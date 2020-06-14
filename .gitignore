@@ -1,3 +1,11 @@
+# Project and development specific files and directories
+certificates/*
+transmissionLogs/*
+zymoTransmitSupport/config.py
+dev/
+.idea
+*.pfx
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
