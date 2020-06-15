@@ -1,6 +1,7 @@
 import os
 import typing
 import argparse
+
 try: # Stuff will seriously break if there is no config file, so if it is missing, this will create the template
     from zymoTransmitSupport import config
 except ImportError:
@@ -9,6 +10,10 @@ except ImportError:
     newConfig = os.path.join("zymoTransmitSupport", "config.py")
     shutil.copy(cleanConfig, newConfig)
     print("No config file was found at the expected location. Please input your lab information into the config file at:\n%s" %(os.path.abspath(newConfig)))
+    import zymoTransmitSupport
+    if zymoTransmitSupport.gui.active:
+        print("Opening config file for editing. Please save and exit when done.")
+        zymoTransmitSupport.gui.textEditFile(newConfig)
     quit()
 
 import zymoTransmitSupport
@@ -47,7 +52,18 @@ class CheckArgs(object):
                     testOnly=True)
             quit()
         if not input:
-            raise ValueError("No input file path supplied.")
+            if zymoTransmitSupport.gui.active:
+                if convertCertificate:
+                    openPrompt = "Select certificate for opening."
+                    fileTypes = (("PFX Certificate", "*.pfx"), ("All Files", "*.*"))
+                else:
+                    openPrompt = "Select result table for opening."
+                    fileTypes = (("Text", "*.txt"), ("All Files", "*.*"))
+                input = zymoTransmitSupport.gui.selectFileForOpening(openPrompt, fileTypes=fileTypes)
+                if not input:
+                    quit("No file was selected.")
+            else:
+                raise ValueError("No input file path supplied.")
         if not os.path.isfile(input):
             raise FileNotFoundError("No such file %s" %input)
         self.input = input
