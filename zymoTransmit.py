@@ -14,6 +14,8 @@ except ImportError:
     if zymoTransmitSupport.gui.active:
         print("Opening config file for editing. Please save and exit when done.")
         zymoTransmitSupport.gui.textEditFile(newConfig)
+    else:
+        print("GUI appears inactive, unable to open configuration file")
     quit()
 
 import zymoTransmitSupport
@@ -29,10 +31,12 @@ class CheckArgs(object):
         parser.add_argument("-l", "--loinc", help = "Display potentially relevant LOINC codes",  action = 'store_true')
         parser.add_argument("-s", "--snomed", help = "Display potentially relevant SNOMED codes",  action = 'store_true')
         parser.add_argument("-c", "--convertCertificate", help = "Convert certificate file [certificate path]", action = 'store_true')
+        parser.add_argument("-e", "--editConfig", help = "Edit configuration file", action = 'store_true')
         parser.add_argument("input", help = "Input file/folder", type = str, nargs='?')
         rawArgs = parser.parse_args()
         testConnection = rawArgs.testConnection
         convertCertificate = rawArgs.convertCertificate
+        editConfig = rawArgs.editConfig
         loinc = rawArgs.loinc
         snomed = rawArgs.snomed
         input = rawArgs.input
@@ -51,6 +55,13 @@ class CheckArgs(object):
                     certificatePath,
                     testOnly=True)
             quit()
+        if editConfig:
+            if zymoTransmitSupport.gui.active:
+                print("Opening config file for editing. Please save and exit when done.")
+                zymoTransmitSupport.gui.textEditFile(newConfig)
+            else:
+                print("GUI appears inactive, unable to open configuration file")
+            quit()
         if not input:
             if zymoTransmitSupport.gui.active:
                 if convertCertificate:
@@ -63,7 +74,7 @@ class CheckArgs(object):
                 if not input:
                     quit("No file was selected.")
             else:
-                raise ValueError("No input file path supplied.")
+                raise ValueError("No input file path supplied and GUI is not active to prompt.")
         if not os.path.isfile(input):
             raise FileNotFoundError("No such file %s" %input)
         self.input = input
