@@ -1,16 +1,17 @@
 import os
-import zymoTransmitSupport
 import typing
 import argparse
-
-try:
+try: # Stuff will seriously break if there is no config file, so if it is missing, this will create the template
     from zymoTransmitSupport import config
 except ImportError:
     import shutil
     cleanConfig = os.path.join("zymoTransmitSupport", "configClean.py")
     newConfig = os.path.join("zymoTransmitSupport", "config.py")
+    shutil.copy(cleanConfig, newConfig)
     print("No config file was found at the expected location. Please input your lab information into the config file at:\n%s" %(os.path.abspath(newConfig)))
     quit()
+
+import zymoTransmitSupport
 
 
 class CheckArgs(object):
