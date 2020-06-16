@@ -1,4 +1,7 @@
 import os
+
+contentRoot = os.path.split(__file__)[0]
+
 import typing
 import argparse
 
@@ -6,8 +9,8 @@ try: # Stuff will seriously break if there is no config file, so if it is missin
     from zymoTransmitSupport import config
 except ImportError:
     import shutil
-    cleanConfig = os.path.join("zymoTransmitSupport", "configClean.py")
-    newConfig = os.path.join("zymoTransmitSupport", "config.py")
+    cleanConfig = os.path.join(contentRoot, "zymoTransmitSupport", "configClean.py")
+    newConfig = os.path.join(contentRoot, "zymoTransmitSupport", "config.py")
     shutil.copy(cleanConfig, newConfig)
     print("No config file was found at the expected location. Please input your lab information into the config file at:\n%s" %(os.path.abspath(newConfig)))
     import zymoTransmitSupport
@@ -32,7 +35,7 @@ class CheckArgs(object):
         parser.add_argument("-s", "--snomed", help = "Display potentially relevant SNOMED codes",  action = 'store_true')
         parser.add_argument("-c", "--convertCertificate", help = "Convert certificate file [certificate path]", action = 'store_true')
         parser.add_argument("-e", "--editConfig", help = "Edit configuration file", action = 'store_true')
-        parser.add_argument("input", help = "Input file/folder", type = str, nargs='?')
+        parser.add_argument("input", help = "Input file", type = str, nargs='?')
         rawArgs = parser.parse_args()
         testConnection = rawArgs.testConnection
         convertCertificate = rawArgs.convertCertificate
@@ -58,7 +61,7 @@ class CheckArgs(object):
         if editConfig:
             if zymoTransmitSupport.gui.active:
                 print("Opening config file for editing. Please save and exit when done.")
-                zymoTransmitSupport.gui.textEditFile(newConfig)
+                zymoTransmitSupport.gui.textEditFile(os.path.join(contentRoot, "zymoTransmitSupport", "config.py"))
             else:
                 print("GUI appears inactive, unable to open configuration file")
             quit()
@@ -85,7 +88,7 @@ class CheckArgs(object):
 
 
 def convertPFX(pfxPath:str, pfxPassword:str=None):
-    pemPath = zymoTransmitSupport.authentication.certHandler.convertPFX(pfxPath, config.Connection.certificateFolder, pfxPassword)
+    pemPath = zymoTransmitSupport.authentication.certHandler.convertPFX(pfxPath, os.path.join(contentRoot, config.Connection.certificateFolder), pfxPassword)
     return pemPath
 
 
@@ -135,10 +138,10 @@ def main(args:CheckArgs):
 
 
 def makeDirectoriesIfNeeded():
-    if not os.path.isdir(config.Connection.certificateFolder):
-        os.mkdir(config.Connection.certificateFolder)
-    if not os.path.isdir(config.Configuration.logFolder):
-        os.mkdir(config.Configuration.logFolder)
+    if not os.path.isdir(os.path.join(contentRoot, config.Connection.certificateFolder)):
+        os.mkdir(os.path.join(contentRoot, config.Connection.certificateFolder))
+    if not os.path.isdir(os.path.join(contentRoot, config.Configuration.logFolder)):
+        os.mkdir(os.path.join(contentRoot, config.Configuration.logFolder))
 
 
 if __name__  == "__main__":
