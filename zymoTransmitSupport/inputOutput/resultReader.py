@@ -1,9 +1,10 @@
 import os
 import datetime
+import re
 
 
 class TestResult(object):
-    expectedElements = 24
+    expectedElements = 32
 
     def __init__(self, rawLine:str, delimiter:str = "\t"):
         self.rawLine = rawLine
@@ -22,22 +23,30 @@ class TestResult(object):
          self.providerLastName,
          self.providerFirstName,
          self.providerMiddleName,
+         self.providerStreet,
+         self.providerCity,
+         self.providerState,
+         self.providerZip,
          self.providerPhone,
          self.specimenID,
          collectionDate,
+         collectionTime,
          receivedDate,
+         receivedTime,
          self.specimenSNOMED,
          self.testLOINC,
          analysisDate,
+         analysisTime,
          self.resultString,
          reportedDate,
+         reportedTime,
          self.note
          ) = self.elementArray
-        self.patientDateOfBirth = self.processDate(patientDateOfBirth)
-        self.collectionDate = self.processDate(collectionDate)
-        self.receivedDate = self.processDate(receivedDate)
-        self.analysisDate = self.processDate(analysisDate)
-        self.reportedDate = self.processDate(reportedDate)
+        self.patientDateOfBirth = self.processDateAndTime(patientDateOfBirth, "")
+        self.collectionDateTime = self.processDateAndTime(collectionDate, collectionTime)
+        self.receivedDateTime = self.processDateAndTime(receivedDate, receivedTime)
+        self.analysisDateTime = self.processDateAndTime(analysisDate, analysisTime)
+        self.reportedDateTime = self.processDateAndTime(reportedDate, reportedTime)
 
     def processRawLine(self, delimiter):
         rawLine = self.rawLine.strip()
@@ -55,15 +64,17 @@ class TestResult(object):
             raise ValueError("\n".join(errorMessageLines))
         return rawLine
 
-    def processDate(self, dateString:str, possibleDelimiters = "/-. "):
+    def processDateAndTime(self, dateString:str, timeString:str, possibleDateDelimiters ="/-. ", possibleTimeDelimiters =":"):
         if not dateString.strip():
-            return datetime.date(1, 1, 1)
-        delimiter = None
-        for possibleDelimiter in possibleDelimiters:
+            return datetime.datetime(1, 1, 1, 0, 0, 0)
+        if not timeString:
+            timeString = "00:00"
+        dateDelimiter = None
+        for possibleDelimiter in possibleDateDelimiters:
             if possibleDelimiter in dateString:
-                delimiter = possibleDelimiter
+                dateDelimiter = possibleDelimiter
                 break
-        if not delimiter:
+        if not dateDelimiter:
             if len(dateString) == 8:
                 month = dateString[:2]
                 day = dateString[2:4]
@@ -75,15 +86,69 @@ class TestResult(object):
                 errorMessageLines.append("Elements: %s" % self.elementArray)
                 raise ValueError("\n".join(errorMessageLines))
         else:
-            dateSplit = dateString.split(delimiter)
+            dateSplit = dateString.split(dateDelimiter)
             if not len(dateSplit) == 3:
                 errorMessageLines = []
                 errorMessageLines.append("Unable to process date value")
-                errorMessageLines.append("Attempting to process '%s' as a date with delimiter '%s' failed." %(dateString, delimiter))
+                errorMessageLines.append("Attempting to process '%s' as a date with delimiter '%s' failed." %(dateString, dateDelimiter))
                 errorMessageLines.append("Elements: %s" % self.elementArray)
                 raise ValueError("\n".join(errorMessageLines))
             month, day, year = dateSplit
-        return datetime.date(int(year), int(month), int(day))
+        timeDelimiter = None
+        for possibleDelimiter in possibleTimeDelimiters:
+            if possibleDelimiter in timeString:
+                timeDelimiter = possibleDelimiter
+                break
+        if not timeDelimiter:
+            if len(timeString) <= 4:
+                timeString = timeString.zfill(4)
+                timeString = timeString + "00"
+            elif len(timeString) in [5, 6]:
+                timeString = timeString.zfill(6)
+            else:
+                errorMessageLines = []
+                errorMessageLines.append("Unable to process time value")
+                errorMessageLines.append("Attempting to process '%s' as a time with no delimiter failed." %(timeString))
+                raise ValueError("\n".join(errorMessageLines))
+            hour = int(timeString[:2])
+            minute = int(timeString[2:4])
+            second = int(timeString[4:])
+        else:
+            timeSplit = timeString.split(timeDelimiter)
+            if len(timeSplit) in [2, 3]:
+                hour = int(timeSplit[0])
+                minute = int(timeSplit[1])
+                if len(timeSplit) == 3:
+                    second = int(timeSplit[2])
+                else:
+                    second = 0
+            else:
+                errorMessageLines = []
+                errorMessageLines.append("Unable to process time value")
+                errorMessageLines.append("Attempting to process '%s' as a time with delimiter '%s' failed." %(timeString, timeDelimiter))
+                errorMessageLines.append("Elements: %s" % self.elementArray)
+                raise ValueError("\n".join(errorMessageLines))
+            hourCheck = hour in range(24)
+            minuteCheck = minute in range(60)
+            secondCheck = second in range(60)
+            if not hourCheck and minuteCheck and secondCheck:
+                errorMessageLines = []
+                errorMessageLines.append("Unable to process time value")
+                errorMessageLines.append("Attempting to process '%s' as a time with delimiter '%s' returned a value out of range (hour not between 0 and 23 or second not between 0 and 59)." %(timeString, timeDelimiter))
+                errorMessageLines.append("Elements: %s" % self.elementArray)
+                raise ValueError("\n".join(errorMessageLines))
+        return datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+
+
+    def getInvalidZips(self):
+        zipCodeFields = [self.patientZip, self.providerZip]
+        invalidZips = []
+        for zip in zipCodeFields:
+            if not zip:
+                continue
+            if not (re.match("^\d{5}$", zip) or re.match("^\d{5}-\d{4}$", zip)):
+                invalidZips.append(zip)
+        return invalidZips
 
     def __str__(self):
         return ", ".join([str(item) for item in self.elementArray])
@@ -94,13 +159,26 @@ def loadRawDataTable(filePath:str):
     if not os.path.isfile(filePath):
         raise FileNotFoundError("Unable to find input file at %s" %filePath)
     resultsFile = open(filePath, 'r')
+    currentLine = 0
     line = resultsFile.readline()
+    currentLine += 1
     while line:
         line = line.strip()
         if not line or line.startswith("#"):
             line = resultsFile.readline()
+            currentLine += 1
             continue
-        testResults.append(TestResult(line))
+        result = TestResult(line)
+        invalidZips = result.getInvalidZips()
+        if invalidZips:
+            errorLines = [
+                "Got invalid zipcode(s) on line %s of the data" %currentLine,
+                "Invalid value(s): %s" %(", ".join(invalidZips)),
+                str(result)
+            ]
+            raise ValueError("\n".join(errorLines))
+        testResults.append(result)
         line = resultsFile.readline()
+        currentLine += 1
     resultsFile.close()
     return testResults

@@ -84,6 +84,12 @@ def makeORCLine(result:inputOutput.resultReader.TestResult):
         config.LabInfo.zip
     )
     orderingFacilityPhone = orderHeader.OrderingFacilityPhone(config.LabInfo.phone)
+    orderingProviderAddress = orderHeader.ProviderAddress(
+        result.providerStreet,
+        result.providerCity,
+        result.providerState,
+        result.providerZip
+    )
 
     return orderHeader.OrderHeaderLine(
         fillerOrderNumber,
@@ -91,7 +97,8 @@ def makeORCLine(result:inputOutput.resultReader.TestResult):
         providerContact,
         orderingFacilityName,
         orderingFacilityAddress,
-        orderingFacilityPhone
+        orderingFacilityPhone,
+        orderingProviderAddress
     )
 
 
@@ -109,9 +116,12 @@ def makeOBRLine(result:inputOutput.resultReader.TestResult):
         coding="LOINC"
     )
     observedDateAndTime = orderRequest.ObservedDateTime(
-        result.analysisDate.year,
-        result.analysisDate.month,
-        result.analysisDate.day
+        result.analysisDateTime.year,
+        result.analysisDateTime.month,
+        result.analysisDateTime.day,
+        result.analysisDateTime.hour,
+        result.analysisDateTime.minute,
+        result.analysisDateTime.second
     )
     orderingProvider = orderRequest.OrderingProvider(
         result.providerLastName,
@@ -122,9 +132,12 @@ def makeOBRLine(result:inputOutput.resultReader.TestResult):
         result.providerPhone
     )
     resultsReported = orderRequest.ResultsReported(
-        result.reportedDate.year,
-        result.reportedDate.month,
-        result.reportedDate.day
+        result.reportedDateTime.year,
+        result.reportedDateTime.month,
+        result.reportedDateTime.day,
+        result.reportedDateTime.hour,
+        result.reportedDateTime.minute,
+        result.reportedDateTime.second
     )
     return orderRequest.OrderRequestLine(
         fillerOrderNumber,
@@ -158,14 +171,20 @@ def makeOBXLine(result:inputOutput.resultReader.TestResult):
     )
     observationValue, abnormalityObject = makeObservationValueAndAbnormalityObjects(result.resultString)
     observationDateTime = observedResults.ObservationDateTime(
-        result.collectionDate.year,
-        result.collectionDate.month,
-        result.collectionDate.day
+        result.collectionDateTime.year,
+        result.collectionDateTime.month,
+        result.collectionDateTime.day,
+        result.collectionDateTime.hour,
+        result.collectionDateTime.minute,
+        result.collectionDateTime.second
     )
     analysisDateTime = observedResults.AnalysisDateAndTime(
-        result.analysisDate.year,
-        result.analysisDate.month,
-        result.analysisDate.day
+        result.analysisDateTime.year,
+        result.analysisDateTime.month,
+        result.analysisDateTime.day,
+        result.analysisDateTime.hour,
+        result.analysisDateTime.minute,
+        result.analysisDateTime.second
     )
     performingOrganization = observedResults.PerformingOrganization(
         config.LabInfo.name,
@@ -227,14 +246,20 @@ def makeSPMLine(result:inputOutput.resultReader.TestResult):
         "SNOMED"
     )
     specimenCollectionDateTime = specimen.SpecimenCollectionDateTime(
-        result.collectionDate.year,
-        result.collectionDate.month,
-        result.collectionDate.day
+        result.collectionDateTime.year,
+        result.collectionDateTime.month,
+        result.collectionDateTime.day,
+        result.collectionDateTime.hour,
+        result.collectionDateTime.minute,
+        result.collectionDateTime.second
     )
     specimenReceivedDateTime = specimen.SpecimenReceivedDateTime(
-        result.receivedDate.year,
-        result.receivedDate.month,
-        result.receivedDate.day
+        result.receivedDateTime.year,
+        result.receivedDateTime.month,
+        result.receivedDateTime.day,
+        result.receivedDateTime.hour,
+        result.receivedDateTime.minute,
+        result.receivedDateTime.second
     )
     return specimen.SpecimenLine(
         specimenID,

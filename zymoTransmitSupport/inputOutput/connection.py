@@ -9,7 +9,7 @@ def getSOAPClient(wsdlURL:str, clientCertificatePath:str=None, dumpClientInfo:bo
         if not os.path.isfile(clientCertificatePath):
             raise FileNotFoundError("Unable to find client certificate path at %s" %clientCertificatePath)
         session.cert = clientCertificatePath
-    transport = zeep.transports.Transport(session=session)
+    transport = zeep.transports.Transport(session=session, timeout=30)
     client = zeep.Client(wsdlURL, transport=transport)
     #testUpload = client.service.connectivityTest("ping")
     if testOnly or dumpClientInfo:

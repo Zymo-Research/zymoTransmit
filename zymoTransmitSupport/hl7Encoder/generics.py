@@ -3,6 +3,8 @@ import re
 import json
 import os
 import zipcodes
+import time
+from .. import config
 
 def loadFIPSData():
     thisFileDirectory = os.path.split(os.path.abspath(__file__))[0]
@@ -128,7 +130,7 @@ class Time(Hl7Field):
 
     includeSeconds = None
 
-    def __init__(self, hour:int, minute:int, second:int=0, gmtOffset:[str, int, tuple]=0, includeSeconds:bool=True, includeOffset:bool=True):
+    def __init__(self, hour:int, minute:int, second:int=0, gmtOffset:[str, int, tuple]=config.LabInfo.gmt_offset, includeSeconds:bool=True, includeOffset:bool=True):
         self.hour = str(hour).zfill(2)
         self.minute = str(minute).zfill(2)
         self.second = str(second).zfill(2)
@@ -141,12 +143,14 @@ class Time(Hl7Field):
         if not includeOffset:
             offsetString = ""
         else:
-            self.offSet = self.processOffset((gmtOffset))
-            offsetString = "-%s" %(self.offSet)
+            self.offSet = self.processOffset(gmtOffset)
+            offsetString = "%s" %(self.offSet)
         timeString = self.hour + self.minute + secondString + "-" + offsetString
         self.subfields = [timeString]
 
-    def processOffset(self, gmtOffset:[str, int, tuple]=0):
+    def processOffset(self, gmtOffset:[str, int, float, tuple]=0):
+        if type(gmtOffset) == float:
+            gmtOffset = int(gmtOffset)
         if type(gmtOffset) == str:
             if len(gmtOffset) == 0:
                 return "0000"
@@ -189,7 +193,7 @@ class DateAndTime(Hl7Field):
 
     includeSeconds = None
 
-    def __init__(self, year:int, month:int, day:int, hour:int=0, minute:int=0, second:int=0, gmtOffset:int=0, includeSeconds:bool=False, includeOffset:bool=True):
+    def __init__(self, year:int, month:int, day:int, hour:int=0, minute:int=0, second:int=0, gmtOffset:int=config.LabInfo.gmt_offset, includeSeconds:bool=False, includeOffset:bool=True):
         if not self.includeSeconds is None:
             includeSeconds = self.includeSeconds
         dateString = str(Date(year, month, day))
@@ -329,6 +333,8 @@ class TelephoneNumberOrEmail(Hl7Field):
         try:
             parsedPhone = re.search(usPhoneNumberRegex, phoneNumber)
         except AttributeError:
+            return False
+        if not parsedPhone:
             return False
         areaCode, trunk, subscriber, extension = parsedPhone.groups()
         self.depricatedPhoneNumber = ""

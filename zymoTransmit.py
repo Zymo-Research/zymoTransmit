@@ -117,6 +117,7 @@ def makeHL7Blocks(hl7Sets:typing.Dict[typing.Tuple[str, str], typing.List[zymoTr
     hl7Blocks = {}
     for resultID, hl7Set in hl7Sets.items():
         textBlock = "\n".join(str(line) for line in hl7Set)
+        textBlock += "\n"
         hl7Blocks[resultID] = textBlock
     return hl7Blocks
 
