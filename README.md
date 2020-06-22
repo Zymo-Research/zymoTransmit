@@ -1,4 +1,4 @@
-# Zymo Transmit: Simple Public Health Data Transmission
+# Zymo Research Transmit: Simple Public Health Data Transmission
 
 We are honored to be playing an important role in the response to COVID-19.  To assist with that, we have chosen to make this program available as free, open-source software for all to use with our support.  Please contact us if you require assistance with this software or other portions of your pipeline ranging from sample collection and preservation to viral RNA extraction, detection, or analysis.  We have experts in high-throughput laboratory automation ready to help you scale-up as well.
 
