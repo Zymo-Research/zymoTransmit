@@ -285,6 +285,7 @@ def zip2FIPS(zip:str):
     zipData = zipcodes.matching(zip)
     if not zipData:
         print("Warning: Zipcode %s does not have any associated information." %zip)
+        return ""
     state = zipData[0]["state"]
     county = zipData[0]["county"]
     try:
