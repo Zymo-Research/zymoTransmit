@@ -1,6 +1,6 @@
 import os
 
-contentRoot = os.path.split(__file__)[0]
+contentRoot = os.path.split(os.path.abspath(__file__))[0]
 
 import typing
 import argparse
@@ -126,7 +126,7 @@ def makeHL7Blocks(hl7Sets:typing.Dict[typing.Tuple[str, str], typing.List[zymoTr
 
 
 def main(args:CheckArgs):
-    certificateFilePath = os.path.join(config.Connection.certificateFolder, config.Connection.certificateFileName)
+    certificateFilePath = os.path.join(contentRoot, config.Connection.certificateFolder, config.Connection.certificateFileName)
     client, session = zymoTransmitSupport.inputOutput.connection.getSOAPClient(
         config.Connection.wsdlURL, certificateFilePath, dumpClientInfo=False)
     resultList = getTestResults(args.input)
