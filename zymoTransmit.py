@@ -74,7 +74,7 @@ class CheckArgs(object):
                     fileTypes = (("PFX Certificate", "*.pfx"), ("All Files", "*.*"))
                 else:
                     openPrompt = "Select result table for opening."
-                    fileTypes = (("Text", "*.txt"), ("All Files", "*.*"))
+                    fileTypes = (("Text/HL7", "*.txt *.csv *.tdf *.hl7"), ("All Files", "*.*"))
                 input = zymoTransmitSupport.gui.selectFileForOpening(openPrompt, fileTypes=fileTypes)
                 if not input:
                     quit("No file was selected.")
