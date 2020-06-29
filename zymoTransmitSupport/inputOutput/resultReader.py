@@ -2,14 +2,19 @@ import os
 import datetime
 import re
 import zipcodes
+import collections
+import csv
 
 
 class TestResult(object):
     expectedElements = 32
 
-    def __init__(self, rawLine: str, delimiter: str = "\t"):
+    def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
         self.rawLine = rawLine
-        self.elementArray = self.processRawLine(delimiter)
+        if type(self.rawLine) == str:
+            self.elementArray = self.processRawLine(delimiter)
+        elif isinstance(rawLine, collections.Iterable):
+            self.elementArray = self.processList(self.rawLine)
         (self.patientID,
          self.patientLastName,
          self.patientFirstName,
@@ -64,6 +69,21 @@ class TestResult(object):
             errorMessageLines.append("Elements: %s" % rawLine)
             raise ValueError("\n".join(errorMessageLines))
         return rawLine
+
+    def processList(self, rawLine):
+        processedList = []
+        for element in rawLine:
+            processedList.append(element.strip().strip('"'))
+        if len(processedList) < self.expectedElements:
+            for i in range(self.expectedElements - len(processedList)):
+                processedList.append("")
+        if not len(processedList) == self.expectedElements:
+            errorMessageLines = []
+            errorMessageLines.append("Got a line with an unexpected number of elements")
+            errorMessageLines.append("Expecting %s elements, but only got %s." % (self.expectedElements, len(processedList)))
+            errorMessageLines.append("Elements: %s" % processedList)
+            raise ValueError("\n".join(errorMessageLines))
+        return processedList
 
     def processDateAndTime(self, dateString: str, timeString: str, possibleDateDelimiters="/-. ",
                            possibleTimeDelimiters=":"):
@@ -164,6 +184,8 @@ class TestResult(object):
         return ", ".join([str(item) for item in self.elementArray])
 
 
+
+
 def yesAnswer(question: str):
     answerTable = {
         "YES": True,
@@ -195,7 +217,7 @@ def confirmProceedWithInvalidZips(invalidZipWarnings:list):
         return True
 
 
-def loadRawDataTable(filePath: str):
+def loadTextDataTable(filePath: str):
     testResults = []
     invalidZipWarnings = []
     if not os.path.isfile(filePath):
@@ -223,3 +245,46 @@ def loadRawDataTable(filePath: str):
     if invalidZipWarnings:
         confirmProceedWithInvalidZips(invalidZipWarnings)
     return testResults
+
+
+def loadCSVDataTable(filePath: str):
+    testResults = []
+    invalidZipWarnings = []
+    if not os.path.isfile(filePath):
+        raise FileNotFoundError("Unable to find input file at %s" % filePath)
+    resultsFile = open(filePath, 'r')
+    csvHandle = csv.reader(resultsFile)
+    currentLine = 0
+    line = next(csvHandle)
+    currentLine += 1
+    while line:
+        if not line or line[0].startswith("#"):
+            try:
+                line = next(csvHandle)
+            except StopIteration:
+                line = []
+            currentLine += 1
+            continue
+        result = TestResult(line)
+        invalidZips = result.getInvalidZips()
+        if invalidZips:
+            for invalidZip in invalidZips:
+                errorLine = "Line %s: Zip: %s - %s" % (currentLine, invalidZip[0], invalidZip[1])
+                invalidZipWarnings.append(errorLine)
+        testResults.append(result)
+        try:
+            line = next(csvHandle)
+        except StopIteration:
+            line = []
+        currentLine += 1
+    resultsFile.close()
+    if invalidZipWarnings:
+        confirmProceedWithInvalidZips(invalidZipWarnings)
+    return testResults
+
+
+def loadRawDataTable(filePath: str):
+    if filePath.lower().endswith(".csv"):
+        return loadCSVDataTable(filePath)
+    else:
+        return loadTextDataTable(filePath)
