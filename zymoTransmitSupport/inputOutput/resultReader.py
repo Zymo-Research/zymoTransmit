@@ -4,6 +4,7 @@ import re
 import zipcodes
 import collections
 import csv
+import typing
 
 
 class TestResult(object):
@@ -164,7 +165,11 @@ class TestResult(object):
                     timeString, timeDelimiter))
                 errorMessageLines.append("Elements: %s" % self.elementArray)
                 raise ValueError("\n".join(errorMessageLines))
-        return datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+        try:
+            dateTimeObject = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+        except ValueError as err:
+            dateTimeObject = (dateString, timeString, str(err))
+        return dateTimeObject
 
     def getInvalidZips(self):
         zipCodeFields = [self.patientZip, self.providerZip]
@@ -180,10 +185,28 @@ class TestResult(object):
                 invalidZips.append(issue)
         return invalidZips
 
+    def getInvalidDateTimes(self):
+        invalidMessages = []
+        dateTimeAttributes = [
+            "patientDateOfBirth",
+            "collectionDateTime",
+            "receivedDateTime",
+            "analysisDateTime",
+            "reportedDateTime"
+        ]
+        for field in dateTimeAttributes:
+            value = getattr(self, field)
+            if not value:
+                continue
+            if type(value) == datetime.datetime:
+                continue
+            errorMessage = "Date and time %s %s generated an error: %s" % (value[0], value[1], value[2])
+            invalidMessages.append(errorMessage)
+            setattr(self, field, datetime.datetime(1, 1, 1, 0, 0, 0))
+        return invalidMessages
+
     def __str__(self):
         return ", ".join([str(item) for item in self.elementArray])
-
-
 
 
 def yesAnswer(question: str):
@@ -205,21 +228,25 @@ def yesAnswer(question: str):
         return answerTable[answer]
 
 
-def confirmProceedWithInvalidZips(invalidZipWarnings:list):
-    print("Invalid zipcodes were found. Please fix if possible. Invalid zip(s):")
-    for invalidZipWarning in invalidZipWarnings:
-        print(invalidZipWarning)
+def confirmProceedWithInvalidZipsOrDateTimes(invalidZipWarnings:list, invalidDateTimeWarnings:list):
+    if invalidZipWarnings:
+        print("Invalid zipcodes were found. Please fix if possible. Invalid zip(s):")
+        for invalidZipWarning in invalidZipWarnings:
+            print(invalidZipWarning)
+    if invalidDateTimeWarnings:
+        print("Invalid dates and/or times were found. Please fix if possible. Invalid dates/times:")
+        for invalidDateTimeWarning in invalidDateTimeWarnings:
+            print(invalidDateTimeWarning)
     proceedAnyway = yesAnswer("Do you wish to proceed anyway?")
+    print()
     if not proceedAnyway:
-        print()
-        quit("Please correct zipcode issues and resume")
+        quit("Please correct issues and resume")
     else:
         return True
 
 
 def loadTextDataTable(filePath: str):
     testResults = []
-    invalidZipWarnings = []
     if not os.path.isfile(filePath):
         raise FileNotFoundError("Unable to find input file at %s" % filePath)
     resultsFile = open(filePath, 'r')
@@ -232,24 +259,16 @@ def loadTextDataTable(filePath: str):
             line = resultsFile.readline()
             currentLine += 1
             continue
-        result = TestResult(line)
-        invalidZips = result.getInvalidZips()
-        if invalidZips:
-            for invalidZip in invalidZips:
-                errorLine = "Line %s: Zip: %s - %s" % (currentLine, invalidZip[0], invalidZip[1])
-                invalidZipWarnings.append(errorLine)
-        testResults.append(result)
+        testResults.append((currentLine, TestResult(line)))
         line = resultsFile.readline()
         currentLine += 1
     resultsFile.close()
-    if invalidZipWarnings:
-        confirmProceedWithInvalidZips(invalidZipWarnings)
-    return testResults
+    cleanedResults = validateResultTable(testResults)
+    return cleanedResults
 
 
 def loadCSVDataTable(filePath: str):
     testResults = []
-    invalidZipWarnings = []
     if not os.path.isfile(filePath):
         raise FileNotFoundError("Unable to find input file at %s" % filePath)
     resultsFile = open(filePath, 'r')
@@ -265,22 +284,35 @@ def loadCSVDataTable(filePath: str):
                 line = []
             currentLine += 1
             continue
-        result = TestResult(line)
-        invalidZips = result.getInvalidZips()
-        if invalidZips:
-            for invalidZip in invalidZips:
-                errorLine = "Line %s: Zip: %s - %s" % (currentLine, invalidZip[0], invalidZip[1])
-                invalidZipWarnings.append(errorLine)
-        testResults.append(result)
+        testResults.append((currentLine, TestResult(line)))
         try:
             line = next(csvHandle)
         except StopIteration:
             line = []
         currentLine += 1
     resultsFile.close()
-    if invalidZipWarnings:
-        confirmProceedWithInvalidZips(invalidZipWarnings)
-    return testResults
+    cleanedResults = validateResultTable(testResults)
+    return cleanedResults
+
+
+def validateResultTable(rawResultTable: typing.List[typing.Tuple[int, TestResult]]):
+    cleanedResults = []
+    invalidZipWarnings = []
+    invalidDateTimeWarnings = []
+    for currentLine, result in rawResultTable:
+        invalidZips = result.getInvalidZips()
+        invalidDateTimes = result.getInvalidDateTimes()
+        if invalidZips or invalidDateTimes:
+            for invalidZip in invalidZips:
+                errorLine = "Line %s: Zip: %s - %s" % (currentLine, invalidZip[0], invalidZip[1])
+                invalidZipWarnings.append(errorLine)
+            for invalidDateTime in invalidDateTimes:
+                errorLine = "Line %s: %s" % (currentLine, invalidDateTime)
+                invalidDateTimeWarnings.append(errorLine)
+        cleanedResults.append(result)
+    if invalidZipWarnings or invalidDateTimeWarnings:
+        confirmProceedWithInvalidZipsOrDateTimes(invalidZipWarnings, invalidDateTimeWarnings)
+    return cleanedResults
 
 
 def loadRawDataTable(filePath: str):
