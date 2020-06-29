@@ -25,7 +25,7 @@ def makeNoteBlock(submissionResults:typing.List[soapAPI.SubmissionStatus], delim
 def writeLogFile(logFolder:str, submissionResults: typing.List[soapAPI.SubmissionStatus], resultText: str):
     timeIdentifier = timeStamp()
     logFileName = "submissionLog%s.txt" % timeIdentifier
-    resultFileName = "resultText%s.txt" % timeIdentifier
+    resultFileName = "resultText%s.hl7" % timeIdentifier
     filePath = os.path.join(logFolder, logFileName)
     outputText = makeNoteBlock(submissionResults)
     outputFile = open(filePath, 'w')

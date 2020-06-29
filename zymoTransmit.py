@@ -127,7 +127,7 @@ def makeHL7Blocks(hl7Sets:typing.Dict[typing.Tuple[str, str], typing.List[zymoTr
     return hl7Blocks
 
 
-def makeHL7TextRecord(hl7Blocks:typing.Dict[str, str]):
+def makeHL7TextRecord(hl7Blocks:typing.Dict[typing.Tuple[str, str], str]):
     textRecord = ""
     for identifier, text in hl7Blocks.items():
         textRecord += text
@@ -138,9 +138,13 @@ def main(args:CheckArgs):
     certificateFilePath = os.path.join(contentRoot, config.Connection.certificateFolder, config.Connection.certificateFileName)
     client, session = zymoTransmitSupport.inputOutput.connection.getSOAPClient(
         config.Connection.wsdlURL, certificateFilePath, dumpClientInfo=False)
-    resultList = getTestResults(args.input)
-    hl7Sets = makeHL7Codes(resultList)
-    hl7TextBlocks = makeHL7Blocks(hl7Sets)
+    if args.input.lower().endswith(".hl7"):
+        print("Using raw HL7 from file %s" %args.input)
+        hl7TextBlocks = zymoTransmitSupport.inputOutput.rawHL7.textBlocksFromRawHL7(args.input)
+    else:
+        resultList = getTestResults(args.input)
+        hl7Sets = makeHL7Codes(resultList)
+        hl7TextBlocks = makeHL7Blocks(hl7Sets)
     hl7TextRecord = makeHL7TextRecord(hl7TextBlocks)
     if not args.noTransmit:
         transmissionResults = zymoTransmitSupport.inputOutput.soapAPI.transmitBlocks(client, hl7TextBlocks)
