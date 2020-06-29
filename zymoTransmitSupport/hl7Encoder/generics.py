@@ -282,9 +282,12 @@ class Address(Hl7Field):
 def zip2FIPS(zip:str):
     if not zip:
         return ""
-    zipData = zipcodes.matching(zip)
+    try:
+        zipData = zipcodes.matching(zip)
+    except ValueError:
+        return ""
     if not zipData:
-        print("Warning: Zipcode %s does not have any associated information." %zip)
+        print("Warning: Zipcode %s does not have any associated information." % zip)
         return ""
     state = zipData[0]["state"]
     county = zipData[0]["county"]

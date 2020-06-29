@@ -1,12 +1,13 @@
 import os
 import datetime
 import re
+import zipcodes
 
 
 class TestResult(object):
     expectedElements = 32
 
-    def __init__(self, rawLine:str, delimiter:str = "\t"):
+    def __init__(self, rawLine: str, delimiter: str = "\t"):
         self.rawLine = rawLine
         self.elementArray = self.processRawLine(delimiter)
         (self.patientID,
@@ -59,12 +60,13 @@ class TestResult(object):
         if not len(rawLine) == self.expectedElements:
             errorMessageLines = []
             errorMessageLines.append("Got a line with an unexpected number of elements")
-            errorMessageLines.append("Expecting %s elements, but only got %s." %(self.expectedElements, len(rawLine)))
-            errorMessageLines.append("Elements: %s" %rawLine)
+            errorMessageLines.append("Expecting %s elements, but only got %s." % (self.expectedElements, len(rawLine)))
+            errorMessageLines.append("Elements: %s" % rawLine)
             raise ValueError("\n".join(errorMessageLines))
         return rawLine
 
-    def processDateAndTime(self, dateString:str, timeString:str, possibleDateDelimiters ="/-. ", possibleTimeDelimiters =":"):
+    def processDateAndTime(self, dateString: str, timeString: str, possibleDateDelimiters="/-. ",
+                           possibleTimeDelimiters=":"):
         if not dateString.strip():
             return datetime.datetime(1, 1, 1, 0, 0, 0)
         if not timeString:
@@ -82,7 +84,7 @@ class TestResult(object):
             else:
                 errorMessageLines = []
                 errorMessageLines.append("Unable to process date value")
-                errorMessageLines.append("Attempting to process '%s' as a date failed." %dateString)
+                errorMessageLines.append("Attempting to process '%s' as a date failed." % dateString)
                 errorMessageLines.append("Elements: %s" % self.elementArray)
                 raise ValueError("\n".join(errorMessageLines))
         else:
@@ -90,7 +92,8 @@ class TestResult(object):
             if not len(dateSplit) == 3:
                 errorMessageLines = []
                 errorMessageLines.append("Unable to process date value")
-                errorMessageLines.append("Attempting to process '%s' as a date with delimiter '%s' failed." %(dateString, dateDelimiter))
+                errorMessageLines.append(
+                    "Attempting to process '%s' as a date with delimiter '%s' failed." % (dateString, dateDelimiter))
                 errorMessageLines.append("Elements: %s" % self.elementArray)
                 raise ValueError("\n".join(errorMessageLines))
             month, day, year = dateSplit
@@ -108,7 +111,8 @@ class TestResult(object):
             else:
                 errorMessageLines = []
                 errorMessageLines.append("Unable to process time value")
-                errorMessageLines.append("Attempting to process '%s' as a time with no delimiter failed." %(timeString))
+                errorMessageLines.append(
+                    "Attempting to process '%s' as a time with no delimiter failed." % timeString)
                 raise ValueError("\n".join(errorMessageLines))
             hour = int(timeString[:2])
             minute = int(timeString[2:4])
@@ -125,7 +129,8 @@ class TestResult(object):
             else:
                 errorMessageLines = []
                 errorMessageLines.append("Unable to process time value")
-                errorMessageLines.append("Attempting to process '%s' as a time with delimiter '%s' failed." %(timeString, timeDelimiter))
+                errorMessageLines.append(
+                    "Attempting to process '%s' as a time with delimiter '%s' failed." % (timeString, timeDelimiter))
                 errorMessageLines.append("Elements: %s" % self.elementArray)
                 raise ValueError("\n".join(errorMessageLines))
             hourCheck = hour in range(24)
@@ -134,11 +139,12 @@ class TestResult(object):
             if not hourCheck and minuteCheck and secondCheck:
                 errorMessageLines = []
                 errorMessageLines.append("Unable to process time value")
-                errorMessageLines.append("Attempting to process '%s' as a time with delimiter '%s' returned a value out of range (hour not between 0 and 23 or second not between 0 and 59)." %(timeString, timeDelimiter))
+                errorMessageLines.append(
+                    "Attempting to process '%s' as a time with delimiter '%s' returned a value out of range (hour not between 0 and 23 or second not between 0 and 59)." % (
+                    timeString, timeDelimiter))
                 errorMessageLines.append("Elements: %s" % self.elementArray)
                 raise ValueError("\n".join(errorMessageLines))
         return datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
-
 
     def getInvalidZips(self):
         zipCodeFields = [self.patientZip, self.providerZip]
@@ -147,17 +153,53 @@ class TestResult(object):
             if not zip:
                 continue
             if not (re.match("^\d{5}$", zip) or re.match("^\d{5}-\d{4}$", zip)):
-                invalidZips.append(zip)
+                issue = (zip, "Invalid zip format")
+                invalidZips.append(issue)
+            elif not zipcodes.matching(zip):
+                issue = (zip, "Zip appears not to exist")
+                invalidZips.append(issue)
         return invalidZips
 
     def __str__(self):
         return ", ".join([str(item) for item in self.elementArray])
 
 
-def loadRawDataTable(filePath:str):
+def yesAnswer(question: str):
+    answerTable = {
+        "YES": True,
+        "Y": True,
+        "NO": False,
+        "N": False
+                   }
+    validAnswer = False
+    answer = ""
+    while not validAnswer:
+        answer = input(question)
+        answer = answer.upper()
+        if answer not in answerTable:
+            print("Invalid answer. Please answer yes or no.")
+            validAnswer = False
+            continue
+        return answerTable[answer]
+
+
+def confirmProceedWithInvalidZips(invalidZipWarnings:list):
+    print("Invalid zipcodes were found. Please fix if possible. Invalid zip(s):")
+    for invalidZipWarning in invalidZipWarnings:
+        print(invalidZipWarning)
+    proceedAnyway = yesAnswer("Do you wish to proceed anyway?")
+    if not proceedAnyway:
+        print()
+        quit("Please correct zipcode issues and resume")
+    else:
+        return True
+
+
+def loadRawDataTable(filePath: str):
     testResults = []
+    invalidZipWarnings = []
     if not os.path.isfile(filePath):
-        raise FileNotFoundError("Unable to find input file at %s" %filePath)
+        raise FileNotFoundError("Unable to find input file at %s" % filePath)
     resultsFile = open(filePath, 'r')
     currentLine = 0
     line = resultsFile.readline()
@@ -171,14 +213,13 @@ def loadRawDataTable(filePath:str):
         result = TestResult(line)
         invalidZips = result.getInvalidZips()
         if invalidZips:
-            errorLines = [
-                "Got invalid zipcode(s) on line %s of the data" %currentLine,
-                "Invalid value(s): %s" %(", ".join(invalidZips)),
-                str(result)
-            ]
-            raise ValueError("\n".join(errorLines))
+            for invalidZip in invalidZips:
+                errorLine = "Line %s: Zip: %s - %s" % (currentLine, invalidZip[0], invalidZip[1])
+                invalidZipWarnings.append(errorLine)
         testResults.append(result)
         line = resultsFile.readline()
         currentLine += 1
     resultsFile.close()
+    if invalidZipWarnings:
+        confirmProceedWithInvalidZips(invalidZipWarnings)
     return testResults

@@ -26,7 +26,7 @@ import zymoTransmitSupport
 
 class CheckArgs(object):
 
-    __slots__ = ["input"]
+    __slots__ = ["input", "noTransmit"]
 
     def __init__(self):
         parser = argparse.ArgumentParser()
@@ -35,6 +35,7 @@ class CheckArgs(object):
         parser.add_argument("-s", "--snomed", help = "Display potentially relevant SNOMED codes",  action = 'store_true')
         parser.add_argument("-c", "--convertCertificate", help = "Convert certificate file [certificate path]", action = 'store_true')
         parser.add_argument("-e", "--editConfig", help = "Edit configuration file", action = 'store_true')
+        parser.add_argument("-n", "--noTransmit", help = "Do not attempt to transmit datat", action = 'store_true')
         parser.add_argument("input", help = "Input file", type = str, nargs='?')
         rawArgs = parser.parse_args()
         testConnection = rawArgs.testConnection
@@ -43,6 +44,7 @@ class CheckArgs(object):
         loinc = rawArgs.loinc
         snomed = rawArgs.snomed
         input = rawArgs.input
+        self.noTransmit = rawArgs.noTransmit
         if testConnection or loinc or snomed:
             if loinc:
                 print("LOINC codes of potential interest:")
@@ -125,6 +127,13 @@ def makeHL7Blocks(hl7Sets:typing.Dict[typing.Tuple[str, str], typing.List[zymoTr
     return hl7Blocks
 
 
+def makeHL7TextRecord(hl7Blocks:typing.Dict[str, str]):
+    textRecord = ""
+    for identifier, text in hl7Blocks.items():
+        textRecord += text
+    return textRecord
+
+
 def main(args:CheckArgs):
     certificateFilePath = os.path.join(contentRoot, config.Connection.certificateFolder, config.Connection.certificateFileName)
     client, session = zymoTransmitSupport.inputOutput.connection.getSOAPClient(
@@ -132,9 +141,13 @@ def main(args:CheckArgs):
     resultList = getTestResults(args.input)
     hl7Sets = makeHL7Codes(resultList)
     hl7TextBlocks = makeHL7Blocks(hl7Sets)
-    transmissionResults = zymoTransmitSupport.inputOutput.soapAPI.transmitBlocks(client, hl7TextBlocks)
-    resultText = zymoTransmitSupport.inputOutput.logger.writeLogFile(config.Configuration.logFolder, transmissionResults)
-    print(resultText)
+    hl7TextRecord = makeHL7TextRecord(hl7TextBlocks)
+    if not args.noTransmit:
+        transmissionResults = zymoTransmitSupport.inputOutput.soapAPI.transmitBlocks(client, hl7TextBlocks)
+        resultText = zymoTransmitSupport.inputOutput.logger.writeLogFile(config.Configuration.logFolder, transmissionResults, hl7TextRecord)
+        print(resultText)
+    else:
+        print("Results not transmitted due to argument noTransmit being set to true.")
 
 
 def makeDirectoriesIfNeeded():
@@ -144,7 +157,7 @@ def makeDirectoriesIfNeeded():
         os.mkdir(os.path.join(contentRoot, config.Configuration.logFolder))
 
 
-if __name__  == "__main__":
+if __name__ == "__main__":
     makeDirectoriesIfNeeded()
     args = CheckArgs()
     main(args)
