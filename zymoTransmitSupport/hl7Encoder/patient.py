@@ -116,6 +116,10 @@ class Address(generics.Address):
     pass
 
 
+class CountryCode(Hl7Field):
+    pass
+
+
 class TelephoneNumberOrEmail(generics.TelephoneNumberOrEmail):
     pass
 
@@ -214,9 +218,10 @@ class PatientIDLine(generics.Hl7Line):
         self.patientAlias = PatientAlias()
         self.race = Race()
         self.address = address
+        self.countryCode = CountryCode()
         self.primaryContact = primaryContact
         self.secondaryContact = secondaryContact
-        self.primaryLanguate = PrimaryLanguage()
+        self.primaryLanguage = PrimaryLanguage()
         self.maritalStatus = MaritalStatus()
         self.religion = Religion()
         self.patientAccountNumber = PatientAccountNumber()
@@ -248,9 +253,10 @@ class PatientIDLine(generics.Hl7Line):
             self.patientAlias,
             self.race,
             self.address,
+            self.countryCode,
             self.primaryContact,
             self.secondaryContact,
-            self.primaryLanguate,
+            self.primaryLanguage,
             self.maritalStatus,
             self.religion,
             self.patientAccountNumber,
