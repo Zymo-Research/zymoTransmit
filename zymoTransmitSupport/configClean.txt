@@ -1,0 +1,77 @@
+# Thank you for using Zymo Research Transmit
+# If you need additional capacity for analysis or wish to check out our testing supplies for SARS-CoV-2 detection,
+# Please visit https://www.zymoresearch.com/pages/covid-19-efforts
+
+# Any line starting with a pound sign (aka: hashtag) will be treated as a comment and ignored while reading this file
+# These comment lines can be used for your own notes, if needed
+# They will also contain instructions, helpful hints, and other useful information from the developer(s) of this program
+# YOU WILL NEED TO CONFIGURE SOME OR ALL OF THE VALUES BELOW:
+
+## Information on your laboratory
+Lab Name:
+Lab Phone:
+Lab Email:
+Lab Street:
+Lab City:
+Lab State:
+Lab Zip:
+Lab Country: USA
+Lab CLIA ID:
+Lab ISO:
+
+## Information on your medical director
+MD Last Name:
+MD First Name:
+MD Middle Name:
+MD Prefix:
+MD Personal Suffix:
+MD Professional Suffix:
+MD Phone:
+MD Email:
+MD Street:
+MD City:
+MD State:
+MD Zip:
+MD Country: USA
+MD Identifier:
+MD Assigning Authority: NPI
+### This may need to be a CLIA number or an ASM identifier or other number, depending upon who certified your
+### medical director. A physician's NPI number can be easily searched on https://npiregistry.cms.hhs.gov/
+
+## Connection Information
+Gateway User:
+Gateway Password:
+Production Approved: FALSE
+### These values should be available in a letter send to your lab when enrolling in CalREDIE. Please be sure to use the
+### SOAP user password here and not the certificate password that was likely provided in the same document.  WHEN YOUR
+### LAB HAS BEEN APPROVED TO SUBMIT TO THE PRODUCTION ENVIRONMENT, ALL THAT SHOULD BE REQUIRED IS CHANGING THE
+### "PRODUCTION APPROVED" VALUE FROM "FALSE" TO "TRUE"
+
+
+
+# YOU WILL PROBABLY NOT HAVE TO CHANGE ANY OF THE VALUES BELOW THIS POINT, AS THEY ARE ALREADY CONFIGURED FOR CalREDIE
+
+Log Folder: transmissionLogs
+
+## Connection
+WSDL URL: https://hiegateway.cdph.ca.gov/submit/CDPH_transfer.wsdl
+Submission URL: https://hiegateway.cdph.ca.gov/submit/services/CDPH_transfer.CDPH_transferHttpsSoap12Endpoint
+Certificate Folder: certificates
+Certificate File Name: certificate.pem
+
+## Message Header Values
+Receiver Name: CDPH CA REDIE
+Receiver ID: 2.16.840.1.114222.4.3.3.10.1.1
+Receiver ID Type: ISO
+Receiving Facility: CDPH_CID
+Receiving Facility ID: 2.16.840.1.114222.4.1.214104
+Receiving Facility ID Type: ISO
+Message Type Code: ORU
+Message Trigger Event: R01
+Message Structure: ORU_R01
+Testing Environment ID: T
+Production Environment ID: P
+Message Profile Entity: PHLabReport-NoAck
+Message Profile Namespace:
+Message Profile Universal ID: 2.16.840.1.113883.9.10
+Message Profile Universal ID Type: ISO

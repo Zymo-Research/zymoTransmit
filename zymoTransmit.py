@@ -7,10 +7,10 @@ import argparse
 
 try: # Stuff will seriously break if there is no config file, so if it is missing, this will create the template
     from zymoTransmitSupport import config
-except ImportError:
+except FileNotFoundError:
     import shutil
-    cleanConfig = os.path.join(contentRoot, "zymoTransmitSupport", "configClean.py")
-    newConfig = os.path.join(contentRoot, "zymoTransmitSupport", "config.py")
+    cleanConfig = os.path.join(contentRoot, "zymoTransmitSupport", "configClean.txt")
+    newConfig = os.path.join(contentRoot, "config.txt")
     shutil.copy(cleanConfig, newConfig)
     print("No config file was found at the expected location. Please input your lab information into the config file at:\n%s" %(os.path.abspath(newConfig)))
     import zymoTransmitSupport
@@ -63,7 +63,7 @@ class CheckArgs(object):
         if editConfig:
             if zymoTransmitSupport.gui.active:
                 print("Opening config file for editing. Please save and exit when done.")
-                zymoTransmitSupport.gui.textEditFile(os.path.join(contentRoot, "zymoTransmitSupport", "config.py"))
+                zymoTransmitSupport.gui.textEditFile(os.path.join(contentRoot, "config.txt"))
             else:
                 print("GUI appears inactive, unable to open configuration file")
             quit()
@@ -74,7 +74,7 @@ class CheckArgs(object):
                     fileTypes = (("PFX Certificate", "*.pfx"), ("All Files", "*.*"))
                 else:
                     openPrompt = "Select result table for opening."
-                    fileTypes = (("Text/HL7", "*.txt *.csv *.tdf *.hl7"), ("All Files", "*.*"))
+                    fileTypes = (("Text/HL7/Cert", "*.txt *.csv *.tdf *.hl7 *.pfx"), ("All Files", "*.*"))
                 input = zymoTransmitSupport.gui.selectFileForOpening(openPrompt, fileTypes=fileTypes)
                 if not input:
                     quit("No file was selected.")
@@ -135,6 +135,18 @@ def makeHL7TextRecord(hl7Blocks:typing.Dict[typing.Tuple[str, str], str]):
 
 
 def main(args:CheckArgs):
+    if os.path.abspath(args.input) == os.path.join(contentRoot, "config.txt"):
+        if zymoTransmitSupport.gui.active:
+            print("Opening config file for editing. Please save and exit when done.")
+            zymoTransmitSupport.gui.textEditFile(os.path.join(args.input))
+        else:
+            print("GUI appears inactive, unable to open configuration file")
+        quit()
+    if args.input.endswith(".pfx"):
+        if zymoTransmitSupport.gui.active:
+            password = zymoTransmitSupport.gui.promptForCertPassword()
+            convertPFX(args.input, pfxPassword=password)
+        quit()
     certificateFilePath = os.path.join(contentRoot, config.Connection.certificateFolder, config.Connection.certificateFileName)
     client, session = zymoTransmitSupport.inputOutput.connection.getSOAPClient(
         config.Connection.wsdlURL, certificateFilePath, dumpClientInfo=False)

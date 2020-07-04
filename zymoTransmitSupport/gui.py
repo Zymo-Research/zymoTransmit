@@ -53,3 +53,21 @@ def textEditFile(filePath:str):
     topWindow.geometry("400x400")
     editor = _Window(topWindow, filePath, "Editing %s. Save and quit when done." %filePath)
     topWindow.mainloop()
+
+
+def promptForCertPassword():
+    def onPasswordEntry(event):
+        password = passwordBox.get()
+        topWindow.destroy()
+    def onOKClick():
+        password = passwordBox.get()
+        topWindow.destroy()
+    password = ""
+    topWindow = tkinter.Tk()
+    passwordBox = tkinter.Entry(topWindow, show = "*")
+    tkinter.Label(topWindow, text = "Enter certificate password, if there is one.").pack(side = 'top')
+    passwordBox.pack(side = 'top')
+    passwordBox.bind("<Return>", onPasswordEntry)
+    tkinter.Button(topWindow, command=onOKClick, text = "OK").pack(side = 'top')
+    topWindow.mainloop()
+    return password
