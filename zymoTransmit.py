@@ -19,6 +19,7 @@ except FileNotFoundError:
         zymoTransmitSupport.gui.textEditFile(newConfig)
     else:
         print("GUI appears inactive, unable to open configuration file")
+    input("Press enter to quit.")
     quit()
 
 import zymoTransmitSupport
@@ -43,7 +44,7 @@ class CheckArgs(object):
         editConfig = rawArgs.editConfig
         loinc = rawArgs.loinc
         snomed = rawArgs.snomed
-        input = rawArgs.input
+        inputValue = rawArgs.input
         self.noTransmit = rawArgs.noTransmit
         if testConnection or loinc or snomed:
             if loinc:
@@ -59,6 +60,7 @@ class CheckArgs(object):
                     config.Connection.wsdlURL,
                     certificatePath,
                     testOnly=True)
+            input("Press enter to quit.")
             quit()
         if editConfig:
             if zymoTransmitSupport.gui.active:
@@ -66,8 +68,9 @@ class CheckArgs(object):
                 zymoTransmitSupport.gui.textEditFile(os.path.join(contentRoot, "config.txt"))
             else:
                 print("GUI appears inactive, unable to open configuration file")
+            input("Press enter to quit.")
             quit()
-        if not input:
+        if not inputValue:
             if zymoTransmitSupport.gui.active:
                 if convertCertificate:
                     openPrompt = "Select certificate for opening."
@@ -75,17 +78,19 @@ class CheckArgs(object):
                 else:
                     openPrompt = "Select result table for opening."
                     fileTypes = (("Text/HL7/Cert", "*.txt *.csv *.tdf *.hl7 *.pfx"), ("All Files", "*.*"))
-                input = zymoTransmitSupport.gui.selectFileForOpening(openPrompt, fileTypes=fileTypes)
-                if not input:
+                inputValue = zymoTransmitSupport.gui.selectFileForOpening(openPrompt, fileTypes=fileTypes)
+                if not inputValue:
+                    input("No file selected. Press enter to quit.")
                     quit("No file was selected.")
             else:
                 raise ValueError("No input file path supplied and GUI is not active to prompt.")
-        if not os.path.isfile(input):
-            raise FileNotFoundError("No such file %s" %input)
-        self.input = input
+        if not os.path.isfile(inputValue):
+            raise FileNotFoundError("No such file %s" %inputValue)
+        self.input = inputValue
         if convertCertificate:
             convertPFX(self.input)
             print("Converted certificate %s" %self.input)
+            input("Press enter to quit.")
             quit()
 
 
@@ -141,11 +146,13 @@ def main(args:CheckArgs):
             zymoTransmitSupport.gui.textEditFile(os.path.join(args.input))
         else:
             print("GUI appears inactive, unable to open configuration file")
+        input("Press enter to quit.")
         quit()
     if args.input.endswith(".pfx"):
         if zymoTransmitSupport.gui.active:
             password = zymoTransmitSupport.gui.promptForCertPassword()
             convertPFX(args.input, pfxPassword=password)
+        input("Press enter to quit.")
         quit()
     certificateFilePath = os.path.join(contentRoot, config.Connection.certificateFolder, config.Connection.certificateFileName)
     client, session = zymoTransmitSupport.inputOutput.connection.getSOAPClient(
@@ -177,3 +184,5 @@ if __name__ == "__main__":
     makeDirectoriesIfNeeded()
     args = CheckArgs()
     main(args)
+    input("Press enter to quit.")
+    quit()

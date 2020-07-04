@@ -1,5 +1,9 @@
 import time
 import os
+import re
+
+trueRE = re.compile("true", re.IGNORECASE)
+falseRE = re.compile("false", re.IGNORECASE)
 
 def readConfigLine(line:str):
     line = line.strip()
@@ -13,6 +17,7 @@ def readConfigLine(line:str):
         value = ":".join(line[1:])
     else:
         value = ""
+    value = value.strip()
     if value.lower() == "true":
         value = True
     elif value.lower() == "false":
@@ -26,10 +31,13 @@ def readConfigurationFile(configurationPath:str=None):
         containingFolder = os.path.split(thisFolder)[0]
         configurationPath = os.path.join(containingFolder, "config.txt")
     configDictBuild = {}
-    configFile = open(configurationPath)
+    configFile = open(configurationPath, 'r')
     for line in configFile:
-        keyValue = readConfigLine(line)
+        line = line.strip()
         if not line:
+            continue
+        keyValue = readConfigLine(line)
+        if not keyValue:
             continue
         key, value = keyValue
         key = key.lower()
@@ -85,7 +93,7 @@ class Connection:
 
 
 class Configuration:
-    productionReady = configDict["production approved"]
+    productionReady = not configDict["in testing"]
     logFolder = configDict["log folder"]
     class MSH:
         class SendingFacility:
@@ -110,7 +118,7 @@ class Configuration:
 
         class ProcessingID:
             testing = configDict["testing environment id"]
-            production = configDict["production envirionment id"]
+            production = configDict["production environment id"]
 
         class MessageProfileIdentifier:
             entity = configDict["message profile entity"]

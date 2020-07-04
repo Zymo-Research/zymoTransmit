@@ -17,7 +17,7 @@ Lab State:
 Lab Zip:
 Lab Country: USA
 Lab CLIA ID:
-Lab ISO:
+Lab ISO: 2.16.840.1.113883.4.7
 
 ## Information on your medical director
 MD Last Name:
@@ -33,7 +33,7 @@ MD City:
 MD State:
 MD Zip:
 MD Country: USA
-MD Identifier:
+MD Identifier Number:
 MD Assigning Authority: NPI
 ### This may need to be a CLIA number or an ASM identifier or other number, depending upon who certified your
 ### medical director. A physician's NPI number can be easily searched on https://npiregistry.cms.hhs.gov/
@@ -41,11 +41,11 @@ MD Assigning Authority: NPI
 ## Connection Information
 Gateway User:
 Gateway Password:
-Production Approved: FALSE
+In Testing: TRUE
 ### These values should be available in a letter send to your lab when enrolling in CalREDIE. Please be sure to use the
 ### SOAP user password here and not the certificate password that was likely provided in the same document.  WHEN YOUR
 ### LAB HAS BEEN APPROVED TO SUBMIT TO THE PRODUCTION ENVIRONMENT, ALL THAT SHOULD BE REQUIRED IS CHANGING THE
-### "PRODUCTION APPROVED" VALUE FROM "FALSE" TO "TRUE"
+### "IN TESTING" VALUE FROM "TRUE" TO "FALSE"
 
 
 

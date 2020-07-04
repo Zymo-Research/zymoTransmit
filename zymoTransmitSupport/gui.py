@@ -56,18 +56,7 @@ def textEditFile(filePath:str):
 
 
 def promptForCertPassword():
-    def onPasswordEntry(event):
-        password = passwordBox.get()
-        topWindow.destroy()
-    def onOKClick():
-        password = passwordBox.get()
-        topWindow.destroy()
-    password = ""
-    topWindow = tkinter.Tk()
-    passwordBox = tkinter.Entry(topWindow, show = "*")
-    tkinter.Label(topWindow, text = "Enter certificate password, if there is one.").pack(side = 'top')
-    passwordBox.pack(side = 'top')
-    passwordBox.bind("<Return>", onPasswordEntry)
-    tkinter.Button(topWindow, command=onOKClick, text = "OK").pack(side = 'top')
-    topWindow.mainloop()
+    import tkinter.simpledialog
+    password = tkinter.simpledialog.askstring("PFX Certificate Password", "Enter certificate password if needed.", show = "*")
     return password
+
