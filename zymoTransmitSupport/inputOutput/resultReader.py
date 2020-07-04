@@ -271,7 +271,16 @@ def loadCSVDataTable(filePath: str):
     testResults = []
     if not os.path.isfile(filePath):
         raise FileNotFoundError("Unable to find input file at %s" % filePath)
-    resultsFile = open(filePath, 'r')
+    probeFile = open(filePath, 'rb')
+    probeBytes = probeFile.read(3)
+    probeFile.close()
+    if probeBytes == b'\xef\xbb\xbf':
+        resultsFile = open(filePath, 'r', encoding='utf-8-sig')
+        utf8 = True
+        print("WARNING: This CSV appears to use UTF-8 encoding. This may cause errors. Please use plain ASCII (standard) CSV format in the future.")
+    else:
+        resultsFile = open(filePath, 'r')
+        utf8 = False
     csvHandle = csv.reader(resultsFile)
     currentLine = 0
     line = next(csvHandle)
