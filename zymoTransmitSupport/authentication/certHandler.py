@@ -33,6 +33,7 @@ def convertPFX(pfxPath:str, outputDirectory:str, pfxPassword:str=None):
         for caCert in ca:
             outputFile.write(OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, caCert))
     outputFile.close()
+    print("Converted certificate %s" % pfxPath)
     return outputPath
 
 

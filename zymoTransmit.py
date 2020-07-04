@@ -89,7 +89,6 @@ class CheckArgs(object):
         self.input = inputValue
         if convertCertificate:
             convertPFX(self.input)
-            print("Converted certificate %s" %self.input)
             input("Press enter to quit.")
             quit()
 
