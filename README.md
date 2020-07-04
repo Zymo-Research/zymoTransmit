@@ -9,14 +9,46 @@ At Zymo Research, our vision is, "*To have a positive impact in the biomedical f
 
 
 #### Publication
-At present, there is not publication planned for this software.  If anybody in the public health field wishes to collaborate on one, please contact us.
+At present, there is not publication planned for this software.  If anybody in the public health/epidemiology field wishes to collaborate on one, please contact us.  We love to publish.
 
 ## Quick Start Guide
+This Program was written in Python 3.6.4.  It should work with other version of 3.6 and most likely later versions as well.
+Earlier versions may have some difficulties. Please report any compatibility problems you may have and I will see about addressing them if you really must run on a different version of Python.
 
-This guide already assumes you have Python 3.6 or later installed on your system and available from the command line.
+If you do not already have the Python language installed on your computer, you can download the web-based installer from this page on [python.org](https://www.python.org/downloads/release/python-364/) or directly from [here](https://www.python.org/ftp/python/3.6.4/python-3.6.4-amd64-webinstall.exe) on a Windows computer.  **During Python installation, be sure to enable Python in your PATH variables, as that will make this program much easier to run in the future.  Also be sure to approve installation of PyTk and PIP, as those will also contribute to making this easier to run in the future.**
+
 If your operating system is Windows, your commands will start with "python" as seen below.
 If your OS is Mac or Linux, you will need to start with "python3" instead of "python"
 
+
+#### Running and setting up without terminal commands
+
+This program can run on a Windows computer with Python installed with little to no use of terminal commands (although terminal will still be used to give you information).  **This is facilitated by having Python available on your *PATH* variable along with PyTk and PIP.** Forgot to enable those? Rerun the installer from above and it will give you the option to modify your installation and fix that.
+* Download this program as a zipped archive from GitHub
+* Extract all of the files to a convenient location.
+* Go to the main folder of this program where you extracted it.  You should see several files including:
+  * **zymoResearch.py** (The main executable source code for this system)
+  * **SETUP.bat** (Batch script to install required Python packages)
+  * **RUN.bat** (Batch script to run the main program)
+* Double-click *SETUP.bat*. You should see a terminal window open with some text crossing it and then it will quickly close. This should complete the installation of required Python packages. You should only have to do this before running the program the first time.
+* Gather all of your lab information as well as your enrollment letter for CalREDIE, you will need this in the next step.
+* Double-click  *RUN.bat*. This will be how you launch the program from here on out.
+  * The first time you run, you will get a text editing window for your *config.txt* file.  Fill in as many fields as possible using your lab information or the enrollment letter's credentials.
+    * This *config.txt* file will be in the same folder as your executable files, should you need to edit it again.  
+    * Please avoid editing this file in Microsoft Word or other word processor programs, as they can introduce strange characters that will corrupt this file. 
+    * A simple text editor will avoid this problem and can be launched by starting the program and selecting the *config.txt* file from the main directory.
+  * The next time you run this program, you will need to install your certificate.  It should have arrived from CDPH as a file ending with *.pfx* and it should have a password in the enrollment document (please be sure not to confuse this with your SOAP gateway password)
+    * Run the program and select the certificate file ending in *.pfx* in the file browser that pops up.
+    * A window will pop up asking for the certificate password. Enter the password and either click *ok* or press *Return* to proceed.
+      * You can paste the password into the prompt using *ctrl + v* after copying it from the document (recommended)
+    * The terminal window should say that the certificate was converted
+    * Press enter to end the program
+* At this point, setup should be complete. Run the program for submission now and in the future by double-clicking *RUN.bat* as before and selecting a tab-delimited text file (ending in *.txt*) or a comma-separated values (CSV) file ending in *.csv*.  
+  * You can also edit your config at any time by selecting your *config.txt* file
+    * **Once CalREDIE has approved you for submitting to the production environment**, you will need to edit this file to reflect that. Simply change the *In Testing* value to *FALSE* from its default value of *TRUE* 
+  * If your lab is generating raw HL7 data for submission, make sure your HL7 file ends with *.hl7* and select the file containing the HL7 data for upload.  
+    * This program will not edit or inspect your HL7 data in any way, other than the very beginning and very end of the block to clean up any potentially unwanted non-printing characters.
+* Be sure to check the terminal window after job completion to see any error messages that were generated.  Copies of all data submitted and receipts for data transmission can be found in the *transmissionLogs* folder.
 
 #### Downloading and setting up the program
 
