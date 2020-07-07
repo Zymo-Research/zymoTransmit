@@ -1,4 +1,5 @@
 import os
+import sys
 
 contentRoot = os.path.split(os.path.abspath(__file__))[0]
 
@@ -138,7 +139,7 @@ def makeHL7TextRecord(hl7Blocks:typing.Dict[typing.Tuple[str, str], str]):
     return textRecord
 
 
-def main(args:CheckArgs):
+def prepareAndSendResults(args:CheckArgs):
     if os.path.abspath(args.input) == os.path.join(contentRoot, "config.txt"):
         if zymoTransmitSupport.gui.active:
             print("Opening config file for editing. Please save and exit when done.")
@@ -179,9 +180,19 @@ def makeDirectoriesIfNeeded():
         os.mkdir(os.path.join(contentRoot, config.Configuration.logFolder))
 
 
+def main():
+    try:
+        makeDirectoriesIfNeeded()
+        args = CheckArgs()
+        prepareAndSendResults(args)
+    except Exception as err:
+        print("Encountered an unhandled error as follows:")
+        print(err)
+        input("Run was not successful. Press enter to quit")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
-    makeDirectoriesIfNeeded()
-    args = CheckArgs()
-    main(args)
-    input("Press enter to quit.")
+    main()
+    input("Completed successfully. Press enter to quit.")
     quit()
