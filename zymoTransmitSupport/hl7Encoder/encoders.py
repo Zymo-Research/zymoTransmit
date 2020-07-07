@@ -158,8 +158,10 @@ def makeOBXLine(result:inputOutput.resultReader.TestResult):
             resultTerm = "detected"
         elif resultStringUpper in config.ResultTerms.negativeResultTerms:
             resultTerm = "negative"
+        elif resultStringUpper in config.ResultTerms.unsatisfactorySpecimenResultTerms:
+            resultTerm = "unsatisfactory"
         else:
-            raise ValueError("Unable to classify result '%s'. Preferred terms are: detected, indeterminate, and negative." %resultString)
+            raise ValueError("Unable to classify result '%s'. Preferred terms are: detected, indeterminate, negative, and unsatisfactory specimen." %resultString)
         return (observedResults.getObservationValue(resultTerm),
                 observedResults.getAbnormalityObject(resultTerm))
 

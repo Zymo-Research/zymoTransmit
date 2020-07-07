@@ -141,3 +141,4 @@ class ResultTerms:
     positiveResultTerms = ["POSITIVE", "DETECTED", "POS"]
     indeterminateResultTerms = ["INDETERMINATE", "N/A", "UNKNOWN"]
     negativeResultTerms = ["ND", "NEG", "NEGATIVE", "NOT DETECTED"]
+    unsatisfactorySpecimenResultTerms = ["UNSATISFACTORY SPECIMEN", "SPECIMEN UNSATISFACTORY", "UNSATISFACTORY"]

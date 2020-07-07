@@ -32,15 +32,17 @@ def getObservationValue(result:str):
     :param result: String describing the result. Must be in ["detected", "indeterminate", "negative"]
     :return: An appropriate result as a generics.SystemCode object
     '''
-    validResults = ["detected", "indeterminate", "negative"]
+    validResults = ["detected", "indeterminate", "negative", "unsatisfactory"]
     if not result in validResults:
         raise ValueError("Result type must be in: " %validResults)
     if result == "detected":
-        return generics.SystemCode(code="10828004", text="Positive", coding="SNOMED", codingSystemDateOrVersion="2.7")
+        return generics.SystemCode(code="260373001", text="Detected", coding="SNOMED", codingSystemDateOrVersion="2.7")
     elif result == "indeterminate":
         return generics.SystemCode(code="419984006", text="Inconclusive", coding="SNOMED", codingSystemDateOrVersion="2.7")
     elif result == "negative":
-        return generics.SystemCode(code="260385009", text="Negative", coding="SNOMED", codingSystemDateOrVersion="2.7")
+        return generics.SystemCode(code="260415000", text="Not detected", coding="SNOMED", codingSystemDateOrVersion="2.7")
+    elif result == "unsatisfactory":
+        return generics.SystemCode(code="125154007", text="Specimen unsatisfactory", coding="SNOMED", codingSystemDateOrVersion="2.7")
     else:
         raise RuntimeError("This code should be unreachable if result validations is working properly and how we got here needs to be investigated")
 
@@ -59,15 +61,17 @@ def getAbnormalityObject(result:str):
     :param result: String describing the result. Must be in ["detected", "indeterminate", "negative"]
     :return: An appropriate result as a generics.SystemCode object
     '''
-    validResults = ["detected", "indeterminate", "negative"]
+    validResults = ["detected", "indeterminate", "negative", "unsatisfactory"]
     if not result in validResults:
         raise ValueError("Result type must be in: " %validResults)
     if result == "detected":
-        return generics.SystemCode(code="DET", text="Detected", coding="HL70078", codingSystemDateOrVersion="2.7")
+        return generics.SystemCode(code="260373001", text="Detected", coding="SNOMED", codingSystemDateOrVersion="2.7")
     elif result == "indeterminate":
-        return generics.SystemCode(code="IND", text="Indeterminate", coding="HL70078", codingSystemDateOrVersion="2.7")
+        return generics.SystemCode(code="419984006", text="Inconclusive", coding="SNOMED", codingSystemDateOrVersion="2.7")
     elif result == "negative":
-        return generics.SystemCode(code="NEG", text="Negative", coding="HL70078", codingSystemDateOrVersion="2.7")
+        return generics.SystemCode(code="260415000", text="Not detected", coding="SNOMED", codingSystemDateOrVersion="2.7")
+    elif result == "unsatisfactory":
+        return generics.SystemCode(code="125154007", text="Specimen unsatisfactory", coding="SNOMED", codingSystemDateOrVersion="2.7")
     else:
         raise RuntimeError("This code should be unreachable if result validations is working properly and how we got here needs to be investigated")
 
