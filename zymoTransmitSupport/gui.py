@@ -17,6 +17,14 @@ def selectFileForOpening(prompt:str, defaultDirectory:str=defaultDirectory, file
     return file
 
 
+def selectDirectoryForOpening(prompt:str, defaultDirectory:str=defaultDirectory, fileTypes=(("All Files", "*.*"))):
+    if not active:
+        raise RuntimeError("Attempted to use GUI while not active")
+    import tkinter.filedialog
+    file = tkinter.filedialog.askdirectory(initialdir=defaultDirectory, title=prompt, filetypes=fileTypes, mustexist='True')
+    return file
+
+
 def textEditFile(filePath:str):
     class _Window(tkinter.Frame):
         def __init__(self, master, filePath: str, title: str = "Text Editor"):

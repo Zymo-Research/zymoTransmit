@@ -28,7 +28,7 @@ import zymoTransmitSupport
 
 class CheckArgs(object):
 
-    __slots__ = ["input", "noTransmit"]
+    __slots__ = ["input", "noTransmit", "hl7Directory"]
 
     def __init__(self):
         parser = argparse.ArgumentParser()
@@ -37,7 +37,8 @@ class CheckArgs(object):
         parser.add_argument("-s", "--snomed", help = "Display potentially relevant SNOMED codes",  action = 'store_true')
         parser.add_argument("-c", "--convertCertificate", help = "Convert certificate file [certificate path]", action = 'store_true')
         parser.add_argument("-e", "--editConfig", help = "Edit configuration file", action = 'store_true')
-        parser.add_argument("-n", "--noTransmit", help = "Do not attempt to transmit datat", action = 'store_true')
+        parser.add_argument("-n", "--noTransmit", help = "Do not attempt to transmit data", action = 'store_true')
+        parser.add_argument("-d", "--hl7Directory", help = "Upload a directory of HL7 files", action = 'store_true')
         parser.add_argument("input", help = "Input file", type = str, nargs='?')
         rawArgs = parser.parse_args()
         testConnection = rawArgs.testConnection
@@ -47,6 +48,9 @@ class CheckArgs(object):
         snomed = rawArgs.snomed
         inputValue = rawArgs.input
         self.noTransmit = rawArgs.noTransmit
+        self.hl7Directory = rawArgs.hl7Directory
+        if self.hl7Directory and convertCertificate:
+            raise RuntimeError("Error: Program cannot be set to both process a certificate AND take in a directory for upload")
         if testConnection or loinc or snomed:
             if loinc:
                 print("LOINC codes of potential interest:")
@@ -73,13 +77,17 @@ class CheckArgs(object):
             quit()
         if not inputValue:
             if zymoTransmitSupport.gui.active:
-                if convertCertificate:
-                    openPrompt = "Select certificate for opening."
-                    fileTypes = (("PFX Certificate", "*.pfx"), ("All Files", "*.*"))
+                if self.hl7Directory:
+                    openPrompt = "Select directory for batch HL7 upload"
+                    inputValue = zymoTransmitSupport.gui.selectDirectoryForOpening(openPrompt)
                 else:
-                    openPrompt = "Select result table for opening."
-                    fileTypes = (("Text/HL7/Cert", "*.txt *.csv *.tdf *.hl7 *.pfx"), ("All Files", "*.*"))
-                inputValue = zymoTransmitSupport.gui.selectFileForOpening(openPrompt, fileTypes=fileTypes)
+                    if convertCertificate:
+                        openPrompt = "Select certificate for opening."
+                        fileTypes = (("PFX Certificate", "*.pfx"), ("All Files", "*.*"))
+                    else:
+                        openPrompt = "Select result table for opening."
+                        fileTypes = (("Text/HL7/Cert", "*.txt *.csv *.tdf *.hl7 *.pfx"), ("All Files", "*.*"))
+                    inputValue = zymoTransmitSupport.gui.selectFileForOpening(openPrompt, fileTypes=fileTypes)
                 if not inputValue:
                     input("No file selected. Press enter to quit.")
                     quit("No file was selected.")
@@ -140,30 +148,36 @@ def makeHL7TextRecord(hl7Blocks:typing.Dict[typing.Tuple[str, str], str]):
 
 
 def prepareAndSendResults(args:CheckArgs):
-    if os.path.abspath(args.input) == os.path.join(contentRoot, "config.txt"):
-        if zymoTransmitSupport.gui.active:
-            print("Opening config file for editing. Please save and exit when done.")
-            zymoTransmitSupport.gui.textEditFile(os.path.join(args.input))
-        else:
-            print("GUI appears inactive, unable to open configuration file")
-        input("Press enter to quit.")
-        quit()
-    if args.input.endswith(".pfx"):
-        if zymoTransmitSupport.gui.active:
-            password = zymoTransmitSupport.gui.promptForCertPassword()
-            convertPFX(args.input, pfxPassword=password)
-        input("Press enter to quit.")
-        quit()
+    if not args.hl7Directory:
+        if os.path.abspath(args.input) == os.path.join(contentRoot, "config.txt"):
+            if zymoTransmitSupport.gui.active:
+                print("Opening config file for editing. Please save and exit when done.")
+                zymoTransmitSupport.gui.textEditFile(os.path.join(args.input))
+            else:
+                print("GUI appears inactive, unable to open configuration file")
+            input("Press enter to quit.")
+            quit()
+        if args.input.endswith(".pfx"):
+            if zymoTransmitSupport.gui.active:
+                password = zymoTransmitSupport.gui.promptForCertPassword()
+                convertPFX(args.input, pfxPassword=password)
+            input("Press enter to quit.")
+            quit()
     certificateFilePath = os.path.join(contentRoot, config.Connection.certificateFolder, config.Connection.certificateFileName)
     client, session = zymoTransmitSupport.inputOutput.connection.getSOAPClient(
         config.Connection.wsdlURL, certificateFilePath, dumpClientInfo=False)
-    if args.input.lower().endswith(".hl7"):
-        print("Using raw HL7 from file %s" %args.input)
-        hl7TextBlocks = zymoTransmitSupport.inputOutput.rawHL7.textBlocksFromRawHL7(args.input)
+    if args.hl7Directory:
+        if not os.path.isdir(args.input):
+            raise NotADirectoryError("%s was given as a directory for raw HL7 block files, but it is not a directory.")
+        hl7TextBlocks = zymoTransmitSupport.inputOutput.hl7DirectoryReader.makeHL7BlocksFromDirectory(args.input)
     else:
-        resultList = getTestResults(args.input)
-        hl7Sets = makeHL7Codes(resultList)
-        hl7TextBlocks = makeHL7Blocks(hl7Sets)
+        if args.input.lower().endswith(".hl7"):
+            print("Using raw HL7 from file %s" %args.input)
+            hl7TextBlocks = zymoTransmitSupport.inputOutput.rawHL7.textBlocksFromRawHL7(args.input)
+        else:
+            resultList = getTestResults(args.input)
+            hl7Sets = makeHL7Codes(resultList)
+            hl7TextBlocks = makeHL7Blocks(hl7Sets)
     hl7TextRecord = makeHL7TextRecord(hl7TextBlocks)
     if not args.noTransmit:
         transmissionResults = zymoTransmitSupport.inputOutput.soapAPI.transmitBlocks(client, hl7TextBlocks)
