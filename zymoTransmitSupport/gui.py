@@ -17,11 +17,11 @@ def selectFileForOpening(prompt:str, defaultDirectory:str=defaultDirectory, file
     return file
 
 
-def selectDirectoryForOpening(prompt:str, defaultDirectory:str=defaultDirectory, fileTypes=(("All Files", "*.*"))):
+def selectDirectoryForOpening(prompt:str, defaultDirectory:str=defaultDirectory):
     if not active:
         raise RuntimeError("Attempted to use GUI while not active")
     import tkinter.filedialog
-    file = tkinter.filedialog.askdirectory(initialdir=defaultDirectory, title=prompt, filetypes=fileTypes, mustexist='True')
+    file = tkinter.filedialog.askdirectory(initialdir=defaultDirectory, title=prompt, mustexist='True')
     return file
 
 

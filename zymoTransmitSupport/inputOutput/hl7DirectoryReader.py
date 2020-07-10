@@ -3,6 +3,7 @@ import re
 from .. import hl7Encoder
 
 hl7LineStartRegex = re.compile(r"\w\w\w\|", re.IGNORECASE)
+softwareLineRegex = re.compile(r"^SFT\|", re.IGNORECASE | re.MULTILINE)
 
 
 def getFileList(targetDirectory:str):
@@ -18,7 +19,7 @@ def getFileList(targetDirectory:str):
             line = probeFile.readline()
             while line: # This loop will throw some error if there are non-text characters in the file
                 line = probeFile.readline()
-        except: # Using a catch all here because if a file can't be opened this way, it will break everything later
+        except: # Using a catch all here because if a file can't be opened this way, it will break everything later and I'm probably not interested in it anyway
             continue
         if not hl7LineStartRegex.match(first4):
             continue
@@ -30,6 +31,9 @@ def getFileList(targetDirectory:str):
 
 def processRawHL7Block(rawBlock:str):
     rawBlock = rawBlock.strip()
+    if not softwareLineRegex.search(rawBlock):
+        softwareLine = hl7Encoder.encoders.makeSFTLine()
+        rawBlock = "%s\n%s" %(softwareLine, rawBlock)
     if not rawBlock.startswith("MSH|"):
         messageHeader = hl7Encoder.encoders.makeMSHLine()
         rawBlock = "%s\n%s" %(messageHeader, rawBlock)

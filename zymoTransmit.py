@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 
 contentRoot = os.path.split(os.path.abspath(__file__))[0]
 
@@ -93,7 +94,7 @@ class CheckArgs(object):
                     quit("No file was selected.")
             else:
                 raise ValueError("No input file path supplied and GUI is not active to prompt.")
-        if not os.path.isfile(inputValue):
+        if not self.hl7Directory and not os.path.isfile(inputValue):
             raise FileNotFoundError("No such file %s" %inputValue)
         self.input = inputValue
         if convertCertificate:
@@ -201,7 +202,7 @@ def main():
         prepareAndSendResults(args)
     except Exception as err:
         print("Encountered an unhandled error as follows:")
-        print(err)
+        traceback.print_exc()
         input("Run was not successful. Press enter to quit")
         sys.exit(1)
 
