@@ -8,7 +8,7 @@ import typing
 
 
 class TestResult(object):
-    expectedElements = 32
+    expectedElements = 34
 
     def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
         self.rawLine = rawLine
@@ -47,7 +47,9 @@ class TestResult(object):
          self.resultString,
          reportedDate,
          reportedTime,
-         self.note
+         self.note,
+         self.race,
+         self.ethnicity
          ) = self.elementArray
         self.patientDateOfBirth = self.processDateAndTime(patientDateOfBirth, "")
         self.collectionDateTime = self.processDateAndTime(collectionDate, collectionTime)

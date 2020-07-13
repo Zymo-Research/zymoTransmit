@@ -1,6 +1,7 @@
 from .generics import Hl7Field
 from . import generics
 from .. import config
+from . import raceEthnicity
 
 
 lineStart = "PID"
@@ -108,8 +109,14 @@ class PatientAlias(Hl7Field):
     pass
 
 
-class Race(Hl7Field): #TODO: Figure out if other labs are collecting this
-    pass
+def makeRaceField(value:str):
+    valueUpper = value.upper()
+    try:
+        raceCode = raceEthnicity.aliasTable[valueUpper]
+    except KeyError:
+        raceCode = raceEthnicity.aliasTable[""]
+    raceData = raceEthnicity.raceEthnicityTable[raceCode]
+    return generics.SystemCode(raceData.code, raceData.preferredName, "CDCREC", "4/24/2007")
 
 
 class Address(generics.Address):
@@ -124,7 +131,7 @@ class TelephoneNumberOrEmail(generics.TelephoneNumberOrEmail):
     pass
 
 
-class PrimaryLanguage(Hl7Field): #TODO: Find out if any of my intended users will use this
+class PrimaryLanguage(Hl7Field):
     pass
 
 
@@ -149,10 +156,6 @@ class DriversLicenseNumber(Hl7Field):
 
 
 class MothersIdentifier(Hl7Field):
-    pass
-
-
-class EthnicGroup(Hl7Field):
     pass
 
 
@@ -206,7 +209,7 @@ class Species(Hl7Field):
 
 class PatientIDLine(generics.Hl7Line):
 
-    def __init__(self, patientIdentifierList:PatientIdentifierList, patientName:PatientName, dateOfBirth:DateOfBirth, sex:Sex, address:Address, primaryContact:TelephoneNumberOrEmail, secondaryContact:TelephoneNumberOrEmail=TelephoneNumberOrEmail()):
+    def __init__(self, patientIdentifierList:PatientIdentifierList, patientName:PatientName, dateOfBirth:DateOfBirth, sex:Sex, address:Address, primaryContact:TelephoneNumberOrEmail, race:str="", ethnicity:str="", secondaryContact:TelephoneNumberOrEmail=TelephoneNumberOrEmail()):
         self.setID = SetID()
         self.patientIdentifierDeprecated = PatientIdentifierDeprecated()
         self.patientIdentifierList = patientIdentifierList
@@ -216,7 +219,7 @@ class PatientIDLine(generics.Hl7Line):
         self.dateOfBirth = dateOfBirth
         self.sex = sex
         self.patientAlias = PatientAlias()
-        self.race = Race()
+        self.race = makeRaceField(race)
         self.address = address
         self.countryCode = CountryCode()
         self.primaryContact = primaryContact
@@ -228,7 +231,7 @@ class PatientIDLine(generics.Hl7Line):
         self.socialSecurity = SocialSecurityNumber()
         self.driversLicense = DriversLicenseNumber()
         self.mothersID = MothersIdentifier()
-        self.ethnicGroup = EthnicGroup()
+        self.ethnicGroup = makeRaceField(ethnicity)
         self.birthPlace = BirthPlace()
         self.multipleBirths = MultipleBirthIndicator()
         self.birthOrder = BirthOrder()

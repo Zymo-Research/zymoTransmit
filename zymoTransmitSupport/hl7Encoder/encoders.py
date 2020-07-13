@@ -48,12 +48,16 @@ def makePIDLine(result:inputOutput.resultReader.TestResult):
         result.patientZip
     )
     primaryContact = patient.TelephoneNumberOrEmail(result.patientPhone)
-    return patient.PatientIDLine(patientIdentifierList,
-                                                                patientName,
-                                                                dateOfBirth,
-                                                                sex,
-                                                                address,
-                                                                primaryContact)
+    return patient.PatientIDLine(
+        patientIdentifierList,
+        patientName,
+        dateOfBirth,
+        sex,
+        address,
+        primaryContact,
+        result.race,
+        result.ethnicity
+    )
 
 
 def makeORCLine(result:inputOutput.resultReader.TestResult):

@@ -40,7 +40,7 @@ class EmptyLOINC(object):
 
 
 def loadRawDataTable():
-    inputFileDirectory = os.path.split(__file__)[0]
+    inputFileDirectory = os.path.split(os.path.abspath(__file__))[0]
     inputFileDirectory = os.path.split(inputFileDirectory)[0]
     inputFileDirectory = os.path.split(inputFileDirectory)[0]
     inputFile = "loincCodes.txt"

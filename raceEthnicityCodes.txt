@@ -1,0 +1,12 @@
+1002-5	american indian or alaska native	native american	alaska native	american indian
+2028-9	asian			
+2054-5	black or african american	african american	black	
+2076-8	native hawaiian or other pacific islander	native hawaiian	pacific islander	hawaiian
+2131-1	other			
+2106-3	white	caucasian		
+2135-2	hispanic or latino	latino	hispanic	
+2186-5	not hispanic or latino			
+PHC1369	not obtainable			
+PHC1367	refused			
+ASKU	asked but unknown			
+UNK	unknown			

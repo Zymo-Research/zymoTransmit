@@ -1,4 +1,4 @@
-__all__ = ["generics", "header", "software", "patient", "orderHeader", "orderRequest", "observedResults", "specimen", "noteLine", "loinc", "snomed", "encoders"]
+__all__ = ["generics", "header", "software", "patient", "orderHeader", "orderRequest", "observedResults", "specimen", "noteLine", "loinc", "snomed", "encoders", "raceEthnicity"]
 
 from . import generics
 from . import header
@@ -12,3 +12,4 @@ from . import noteLine
 from . import loinc
 from . import snomed
 from . import encoders
+from . import raceEthnicity
