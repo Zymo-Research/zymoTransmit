@@ -29,6 +29,7 @@ def loadRawDataTable():
     dataTable = []
     for line in data:
         line = [element.strip() for element in line]
+        dataTable.append(line)
     return dataTable
 
 
@@ -49,7 +50,7 @@ def makeAliasTable(raceEthnicityTable:typing.Dict[str, RaceEthnicity]):
         aliasTable[code] = code
         for alias in raceEthnicity.aliases:
             aliasTable[alias] = code
-    aliasTable[""] = aliasTable["unknown"]
+    aliasTable[""] = aliasTable["UNKNOWN"]
     return aliasTable
 
 
