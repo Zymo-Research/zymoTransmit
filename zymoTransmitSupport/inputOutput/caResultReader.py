@@ -5,10 +5,25 @@ import zipcodes
 import collections
 import csv
 import typing
+from . import resultReader
+
+loincRegex = re.compile(r"^\d{5}-\d$")
+
+def makeSpecimenRegexes():
+    nasalTerms = ["NASO", "NOSE", "NASAL", "NPNX", r"\WNP\W", r"^NP\W", r"\WNP$", r"^NP$"]
+    oralTerms = ["THROAT", "OROPHARYN", r"\WOP\W", r"^OP\W", r"\WOP$", r"^OP$"]
+    bloodTerms = ["BLOOD", "SERUM", "PLASMA"]
+    nasalRegexList = [re.compile(term, re.IGNORECASE) for term in nasalTerms]
+    oralRegexList = [re.compile(term, re.IGNORECASE) for term in oralTerms]
+    bloodRegexList = [re.compile(term, re.IGNORECASE) for term in bloodTerms]
+    return nasalRegexList, oralRegexList, bloodRegexList
+
+nasalRegexList, oralRegexList, bloodRegexList = makeSpecimenRegexes()
+swabRegex = re.compile("SWAB", re.IGNORECASE)
 
 
-class TestResult(object):
-    expectedElements = 34
+class CATestResult(object):
+    expectedElements = 40
 
     def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
         self.rawLine = rawLine
@@ -16,47 +31,58 @@ class TestResult(object):
             self.elementArray = self.processRawLine(delimiter)
         elif isinstance(rawLine, collections.Iterable):
             self.elementArray = self.processList(self.rawLine)
-        (self.patientID,
-         self.patientLastName,
+        (self.sendingApplication,
+         self.facilityName,
+         self.facilityCLIA,
+         self.facilityStreet,
+         self.facilityCity,
+         self.facilityState,
+         self.facilityZip,
+         self.facilityPhone,
+         reportedDateAndTime,
+         self.patientID,
          self.patientFirstName,
-         self.patientMiddleName,
+         self.patientLastName,
          patientDateOfBirth,
          self.patientSex,
+         self.race,
+         self.ethnicity,
+         self.language,
          self.patientStreetAddress,
          self.patientCity,
          self.patientState,
          self.patientZip,
+         self.patientCountry,
          self.patientPhone,
-         self.providerLastName,
+         self.okToContact,
+         self.insurance,
+         self.expedited,
          self.providerFirstName,
-         self.providerMiddleName,
-         self.providerStreet,
-         self.providerCity,
-         self.providerState,
-         self.providerZip,
+         self.providerLastName,
          self.providerPhone,
          self.specimenID,
          collectionDate,
-         collectionTime,
-         receivedDate,
-         receivedTime,
-         self.specimenSNOMED,
-         self.testLOINC,
-         analysisDate,
-         analysisTime,
+         self.specimenType,
+         self.specimenSite,
+         self.testName,
          self.resultString,
-         reportedDate,
-         reportedTime,
          self.note,
-         self.race,
-         self.ethnicity
+         self.accession,
+         self.testCode,
+         self.resultCode,
+         self.unused
          ) = self.elementArray
+        if not self.specimenID:
+            self.specimenID = self.accession
         self.patientDateOfBirth = self.processDateAndTime(patientDateOfBirth, "")
-        self.collectionDateTime = self.processDateAndTime(collectionDate, collectionTime)
-        self.receivedDateTime = self.processDateAndTime(receivedDate, receivedTime)
-        self.analysisDateTime = self.processDateAndTime(analysisDate, analysisTime)
-        self.reportedDateTime = self.processDateAndTime(reportedDate, reportedTime)
-        self.auxiliaryData = {}
+        self.collectionDateTime = self.processDateAndTime(collectionDate, "")
+        self.reportedDateTime = self.processDateAndTime(reportedDateAndTime, "")
+        self.patientDateOfBirth, patientTimeOfBirth = self.revertDateTimeObject(self.patientDateOfBirth)
+        self.collectionDate, self.collectionTime = self.revertDateTimeObject(self.collectionDateTime)
+        self.reportedDate, self.reportedTime = self.revertDateTimeObject(self.reportedDateTime)
+        self.testLOINC = self.findTestLoinc()
+        self.specimenSNOMED = self.determineSampleType()
+
 
     def processRawLine(self, delimiter):
         rawLine = self.rawLine.strip()
@@ -95,16 +121,40 @@ class TestResult(object):
             return datetime.datetime(1, 1, 1, 0, 0, 0)
         if not timeString:
             timeString = "00:00"
+        tzInfo = None
         dateDelimiter = None
         for possibleDelimiter in possibleDateDelimiters:
             if possibleDelimiter in dateString:
+                if possibleDelimiter == "-":
+                    if dateString.count(possibleDelimiter) == 1:
+                        continue
                 dateDelimiter = possibleDelimiter
                 break
         if not dateDelimiter:
             if len(dateString) == 8:
-                month = dateString[:2]
-                day = dateString[2:4]
-                year = dateString[4:]
+                month = dateString[:4]
+                day = dateString[4:6]
+                year = dateString[6:]
+            elif len(dateString) == 14:
+                month = dateString[:4]
+                day = dateString[4:6]
+                year = dateString[6:8]
+                hour = dateString[8:10]
+                minute = dateString[10:12]
+                second = dateString[12:14]
+                timeString = ":".join([hour, minute, second])
+            elif len(dateString) == 19 and "-" in dateString:
+                month = dateString[:4]
+                day = dateString[4:6]
+                year = dateString[6:8]
+                hour = dateString[8:10]
+                minute = dateString[10:12]
+                second = dateString[12:14]
+                timeString = ":".join([hour, minute, second])
+                offset = timeString.split("-")[1]
+                offset = offset[:2]
+                offset = int(offset)
+                tzInfo = datetime.timedelta(hours=offset)
             else:
                 errorMessageLines = []
                 errorMessageLines.append("Unable to process date value")
@@ -169,105 +219,118 @@ class TestResult(object):
                 errorMessageLines.append("Elements: %s" % self.elementArray)
                 raise ValueError("\n".join(errorMessageLines))
         try:
-            dateTimeObject = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+            dateTimeObject = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tzInfo)
         except ValueError as err:
             dateTimeObject = (dateString, timeString, str(err))
         return dateTimeObject
 
-    def getInvalidZips(self):
-        zipCodeFields = [self.patientZip, self.providerZip]
-        invalidZips = []
-        for zip in zipCodeFields:
-            if not zip:
-                continue
-            if not (re.match("^\d{5}$", zip) or re.match("^\d{5}-\d{4}$", zip)):
-                issue = (zip, "Invalid zip format")
-                invalidZips.append(issue)
-            elif not zipcodes.matching(zip):
-                issue = (zip, "Zip appears not to exist")
-                invalidZips.append(issue)
-        return invalidZips
 
-    def getInvalidDateTimes(self):
-        invalidMessages = []
-        dateTimeAttributes = [
-            "patientDateOfBirth",
-            "collectionDateTime",
-            "receivedDateTime",
-            "analysisDateTime",
-            "reportedDateTime"
+    def revertDateTimeObject(self, revertant:[datetime.datetime, datetime.date, datetime.time]):
+        if not revertant:
+            return ("", "")
+        if type(revertant) == datetime.datetime:
+            dateString = "%s/%s/%s" %(revertant.month, revertant.day, revertant.year)
+            timeString = "%s:%s:%s" %(revertant.hour, revertant.minute, revertant.second)
+        elif type(revertant) == datetime.date:
+            dateString = "%s/%s/%s" %(revertant.month, revertant.day, revertant.year)
+            timeString = ""
+        elif type(revertant) == datetime.time:
+            dateString = ""
+            timeString = "%s:%s:%s" %(revertant.hour, revertant.minute, revertant.second)
+        else:
+            raise ValueError("Got an invalid value trying to revert a datetime object to a string: %s of type %s" %(revertant, type(revertant)))
+        return (dateString, timeString)
+
+
+    def findTestLoinc(self):
+        if loincRegex.match(self.testCode):
+            return self.testCode
+        if loincRegex.match(self.testName):
+            return self.testName
+        else:
+            return ""
+
+
+    def determineSampleType(self):
+        def checkFields(regexList:list):
+            for field in fields:
+                for regex in regexList:
+                    if regex.search(field):
+                        return True
+            return False
+        nasopharyngealSwabSNOMED = "258500001"
+        throatSwabSNOMED = "258529004"
+        bloodSNOMED = "788707000"
+        swabNotOtherwiseSpecifiedSNOMED = "257261003"
+        fields = [self.specimenType, self.specimenSite]
+        nasal = checkFields(nasalRegexList)
+        swab = checkFields([swabRegex])
+        oral = checkFields(oralRegexList)
+        blood = checkFields(bloodRegexList)
+        if swab:
+            if nasal and oral:
+                return swabNotOtherwiseSpecifiedSNOMED
+            elif nasal:
+                return nasopharyngealSwabSNOMED
+            elif oral:
+                return throatSwabSNOMED
+            else:
+                return swabNotOtherwiseSpecifiedSNOMED
+        elif blood:
+            return bloodSNOMED
+        else:
+            return ""
+
+
+    def convertToStandardResultObject(self):
+        resultArray = [
+             self.patientID,
+             self.patientLastName,
+             self.patientFirstName,
+             "",
+             self.patientDateOfBirth,
+             self.patientSex,
+             self.patientStreetAddress,
+             self.patientCity,
+             self.patientState,
+             self.patientZip,
+             self.patientPhone,
+             self.providerLastName,
+             self.providerFirstName,
+             "",
+             "",
+             "",
+             "",
+             "",
+             self.providerPhone,
+             self.specimenID,
+             self.collectionDate,
+             self.collectionTime,
+             "",
+             "",
+             self.specimenSNOMED,
+             self.testLOINC,
+             "",
+             "",
+             self.resultString,
+             self.reportedDate,
+             self.reportedTime,
+             self.note,
+             self.race,
+             self.ethnicity
         ]
-        for field in dateTimeAttributes:
-            value = getattr(self, field)
-            if not value:
-                continue
-            if type(value) == datetime.datetime:
-                continue
-            errorMessage = "Date and time %s %s generated an error: %s" % (value[0], value[1], value[2])
-            invalidMessages.append(errorMessage)
-            setattr(self, field, datetime.datetime(1, 1, 1, 0, 0, 0))
-        return invalidMessages
+        resultObject = resultReader.TestResult(resultArray)
+        auxiliaryData = {
+            NEED VALUES HERE
+        }
+        resultObject.auxiliaryData = auxiliaryData.copy()
+
+
+
+
 
     def __str__(self):
         return ", ".join([str(item) for item in self.elementArray])
-
-
-def yesAnswer(question: str):
-    answerTable = {
-        "YES": True,
-        "Y": True,
-        "NO": False,
-        "N": False
-                   }
-    validAnswer = False
-    answer = ""
-    while not validAnswer:
-        answer = input(question)
-        answer = answer.upper()
-        if answer not in answerTable:
-            print("Invalid answer. Please answer yes or no.")
-            validAnswer = False
-            continue
-        return answerTable[answer]
-
-
-def confirmProceedWithInvalidZipsOrDateTimes(invalidZipWarnings:list, invalidDateTimeWarnings:list):
-    if invalidZipWarnings:
-        print("Invalid zipcodes were found. Please fix if possible. Invalid zip(s):")
-        for invalidZipWarning in invalidZipWarnings:
-            print(invalidZipWarning)
-    if invalidDateTimeWarnings:
-        print("Invalid dates and/or times were found. Please fix if possible. Invalid dates/times:")
-        for invalidDateTimeWarning in invalidDateTimeWarnings:
-            print(invalidDateTimeWarning)
-    proceedAnyway = yesAnswer("Do you wish to proceed anyway?")
-    print()
-    if not proceedAnyway:
-        quit("Please correct issues and resume")
-    else:
-        return True
-
-
-def loadTextDataTable(filePath: str):
-    testResults = []
-    if not os.path.isfile(filePath):
-        raise FileNotFoundError("Unable to find input file at %s" % filePath)
-    resultsFile = open(filePath, 'r')
-    currentLine = 0
-    line = resultsFile.readline()
-    currentLine += 1
-    while line:
-        line = line.strip()
-        if not line or line.startswith("#"):
-            line = resultsFile.readline()
-            currentLine += 1
-            continue
-        testResults.append((currentLine, TestResult(line)))
-        line = resultsFile.readline()
-        currentLine += 1
-    resultsFile.close()
-    cleanedResults = validateResultTable(testResults)
-    return cleanedResults
 
 
 def loadCSVDataTable(filePath: str):
@@ -280,7 +343,7 @@ def loadCSVDataTable(filePath: str):
     if probeBytes == b'\xef\xbb\xbf':
         resultsFile = open(filePath, 'r', encoding='utf-8-sig')
         utf8 = True
-        print("WARNING: This CSV appears to use UTF-8 encoding. This may cause errors. Please use plain ASCII (standard) CSV format in the future.")
+        #print("WARNING: This CSV appears to use UTF-8 encoding. This may cause errors. Please use plain ASCII (standard) CSV format in the future.") #This is probably unnecessary, although it does open the way for people to potentially use weird characters
     else:
         resultsFile = open(filePath, 'r')
         utf8 = False
@@ -288,6 +351,9 @@ def loadCSVDataTable(filePath: str):
     currentLine = 0
     line = next(csvHandle)
     currentLine += 1
+    if line[0].strip() == "Sending Application":
+        line = next(csvHandle)
+        currentLine += 1
     while line:
         if not line or line[0].startswith("#"):
             try:
@@ -305,30 +371,3 @@ def loadCSVDataTable(filePath: str):
     resultsFile.close()
     cleanedResults = validateResultTable(testResults)
     return cleanedResults
-
-
-def validateResultTable(rawResultTable: typing.List[typing.Tuple[int, TestResult]]):
-    cleanedResults = []
-    invalidZipWarnings = []
-    invalidDateTimeWarnings = []
-    for currentLine, result in rawResultTable:
-        invalidZips = result.getInvalidZips()
-        invalidDateTimes = result.getInvalidDateTimes()
-        if invalidZips or invalidDateTimes:
-            for invalidZip in invalidZips:
-                errorLine = "Line %s: Zip: %s - %s" % (currentLine, invalidZip[0], invalidZip[1])
-                invalidZipWarnings.append(errorLine)
-            for invalidDateTime in invalidDateTimes:
-                errorLine = "Line %s: %s" % (currentLine, invalidDateTime)
-                invalidDateTimeWarnings.append(errorLine)
-        cleanedResults.append(result)
-    if invalidZipWarnings or invalidDateTimeWarnings:
-        confirmProceedWithInvalidZipsOrDateTimes(invalidZipWarnings, invalidDateTimeWarnings)
-    return cleanedResults
-
-
-def loadRawDataTable(filePath: str):
-    if filePath.lower().endswith(".csv"):
-        return loadCSVDataTable(filePath)
-    else:
-        return loadTextDataTable(filePath)

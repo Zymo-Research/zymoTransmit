@@ -6,6 +6,7 @@
 119364003	Serum specimen (specimen)	Serum specimen
 122575003	Urine specimen (specimen)	Urine specimen
 122610009	Specimen from lung obtained by biopsy (specimen)	Specimen from lung obtained by biopsy
+257261003	Swab (specimen) NOS	Swab (specimen) NOS
 258411007	Nasopharyngeal aspirate (specimen)	Nasopharyngeal aspirate
 258412000	Oropharyngeal aspirate (specimen)	Oropharyngeal aspirate
 258467004	Nasopharyngeal washings (specimen)	Nasopharyngeal washings
