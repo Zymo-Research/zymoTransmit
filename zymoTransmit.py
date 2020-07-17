@@ -119,6 +119,7 @@ def getTestResults(testResultPath:str="results.txt", cdphCSV:bool=False):
 
 def makeHL7Codes(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult]):
     hl7Sets = {}
+    skippedData = []
     for result in resultList:
         patientID = result.patientID
         specimenID = result.specimenID
@@ -138,7 +139,8 @@ def makeHL7Codes(resultList:typing.List[zymoTransmitSupport.inputOutput.resultRe
             for reason in result.reasonsNotToTransmit:
                 print("\t%s" %reason)
             del hl7Sets[(patientID, specimenID)]
-    return hl7Sets
+            skippedData.append((patientID, specimenID))
+    return hl7Sets, skippedData
 
 
 def makeHL7Blocks(hl7Sets:typing.Dict[typing.Tuple[str, str], typing.List[zymoTransmitSupport.hl7Encoder.generics.Hl7Line]]):
@@ -173,6 +175,7 @@ def prepareAndSendResults(args:CheckArgs):
                 convertPFX(args.input, pfxPassword=password)
             input("Press enter to quit.")
             quit()
+    skippedData = []
     certificateFilePath = os.path.join(contentRoot, config.Connection.certificateFolder, config.Connection.certificateFileName)
     client, session = zymoTransmitSupport.inputOutput.connection.getSOAPClient(
         config.Connection.wsdlURL, certificateFilePath, dumpClientInfo=False)
@@ -186,13 +189,17 @@ def prepareAndSendResults(args:CheckArgs):
             hl7TextBlocks = zymoTransmitSupport.inputOutput.rawHL7.textBlocksFromRawHL7(args.input)
         else:
             resultList = getTestResults(args.input, args.cdph)
-            hl7Sets = makeHL7Codes(resultList)
+            hl7Sets, skippedData = makeHL7Codes(resultList)
             hl7TextBlocks = makeHL7Blocks(hl7Sets)
     hl7TextRecord = makeHL7TextRecord(hl7TextBlocks)
     if not args.noTransmit:
         transmissionResults = zymoTransmitSupport.inputOutput.soapAPI.transmitBlocks(client, hl7TextBlocks)
         resultText = zymoTransmitSupport.inputOutput.logger.writeLogFile(config.Configuration.logFolder, transmissionResults, hl7TextRecord)
         print(resultText)
+        if skippedData:
+            print("WARNING: Some results were skipped for reasons listed above:")
+            for patientID, specimenID in skippedData:
+                print("%s:%s was skipped" %(patientID, specimenID))
     else:
         print("Results not transmitted due to argument noTransmit being set to true.")
 

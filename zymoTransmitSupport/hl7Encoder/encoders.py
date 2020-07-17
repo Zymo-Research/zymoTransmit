@@ -24,8 +24,14 @@ def makeSFTLine(passThruMode:bool=False):
 
 
 def makePIDLine(result:inputOutput.resultReader.TestResult):
-    idAssigner = patient.IDAssignerSubfield.fromObject(config.Configuration.PID.IDAssigner)
-    facility = patient.FacilitySubfield.fromObject(config.Configuration.PID.Facility)
+    if "labName" in result.auxiliaryData or "labCLIA" in result.auxiliaryData:
+        if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
+            raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
+        idAssigner = patient.IDAssignerSubfield(result.auxiliaryData["labName"], result.auxiliaryData["labCLIA"], "CLIA")
+        facility = patient.FacilitySubfield(result.auxiliaryData["labName"], result.auxiliaryData["labCLIA"], "CLIA")
+    else:
+        idAssigner = patient.IDAssignerSubfield.fromObject(config.Configuration.PID.IDAssigner)
+        facility = patient.FacilitySubfield.fromObject(config.Configuration.PID.Facility)
     patientIdentifierList = patient.PatientIdentifierList(
         result.patientID,
         idAssigner,
