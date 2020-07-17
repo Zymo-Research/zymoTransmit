@@ -95,7 +95,9 @@ class Sex(Hl7Field):
             "M": "M",
             "F": "F",
             "MALE": "M",
-            "FEMALE": "F"
+            "FEMALE": "F",
+            "U": "",
+            "UNKNOWN": ""
         }
         if not sex:
             sexString = ""

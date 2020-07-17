@@ -29,7 +29,7 @@ import zymoTransmitSupport
 
 class CheckArgs(object):
 
-    __slots__ = ["input", "noTransmit", "hl7Directory", "cdph"]
+    __slots__ = ["input", "noTransmit", "hl7Directory", "cdph", "debug"]
 
     def __init__(self):
         parser = argparse.ArgumentParser()
@@ -41,6 +41,7 @@ class CheckArgs(object):
         parser.add_argument("-n", "--noTransmit", help = "Do not attempt to transmit data", action = 'store_true')
         parser.add_argument("-d", "--hl7Directory", help = "Upload a directory of HL7 files", action = 'store_true')
         parser.add_argument("--cdph", help = "Read CDPH format with header line", action = 'store_true')
+        parser.add_argument("--debug", help="Running in debugging mode", action='store_true')
         parser.add_argument("input", help = "Input file", type = str, nargs='?')
         rawArgs = parser.parse_args()
         testConnection = rawArgs.testConnection
@@ -52,6 +53,7 @@ class CheckArgs(object):
         self.noTransmit = rawArgs.noTransmit
         self.hl7Directory = rawArgs.hl7Directory
         self.cdph = rawArgs.cdph
+        self.debug = rawArgs.debug
         if self.hl7Directory and convertCertificate:
             raise RuntimeError("Error: Program cannot be set to both process a certificate AND take in a directory for upload")
         if testConnection or loinc or snomed:
@@ -197,12 +199,20 @@ def makeDirectoriesIfNeeded():
         os.mkdir(os.path.join(contentRoot, config.Configuration.logFolder))
 
 
+class PlaceHolderException(Exception):
+    pass
+
+
 def main():
+    if "--debug" in sys.argv:
+        allOrNothingException = PlaceHolderException
+    else:
+        allOrNothingException = Exception
     try:
         makeDirectoriesIfNeeded()
         args = CheckArgs()
         prepareAndSendResults(args)
-    except Exception as err:
+    except allOrNothingException as err:
         print("Encountered an unhandled error as follows:")
         traceback.print_exc()
         input("Run was not successful. Press enter to quit")

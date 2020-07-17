@@ -103,9 +103,9 @@ class TestResult(object):
                 break
         if not dateDelimiter:
             if len(dateString) == 8:
-                month = dateString[:2]
-                day = dateString[2:4]
-                year = dateString[4:]
+                year = dateString[:4]
+                month = dateString[4:6]
+                day = dateString[6:]
             else:
                 errorMessageLines = []
                 errorMessageLines.append("Unable to process date value")

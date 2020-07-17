@@ -139,6 +139,6 @@ class Configuration:
 
 class ResultTerms:
     positiveResultTerms = ["POSITIVE", "DETECTED", "POS"]
-    indeterminateResultTerms = ["INDETERMINATE", "N/A", "UNKNOWN"]
+    indeterminateResultTerms = ["INDETERMINATE", "N/A", "UNKNOWN", "INCONCLUSIVE", "INVALID"]
     negativeResultTerms = ["ND", "NEG", "NEGATIVE", "NOT DETECTED"]
     unsatisfactorySpecimenResultTerms = ["UNSATISFACTORY SPECIMEN", "SPECIMEN UNSATISFACTORY", "UNSATISFACTORY"]

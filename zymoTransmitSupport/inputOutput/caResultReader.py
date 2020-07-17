@@ -129,29 +129,30 @@ class CATestResult(object):
                 break
         if not dateDelimiter:
             if len(dateString) == 8:
-                month = dateString[:4]
-                day = dateString[4:6]
-                year = dateString[6:]
+                year = dateString[:4]
+                month = dateString[4:6]
+                day = dateString[6:]
             elif len(dateString) == 14:
-                month = dateString[:4]
-                day = dateString[4:6]
-                year = dateString[6:8]
+                year = dateString[:4]
+                month = dateString[4:6]
+                day = dateString[6:8]
                 hour = dateString[8:10]
                 minute = dateString[10:12]
                 second = dateString[12:14]
                 timeString = ":".join([hour, minute, second])
             elif len(dateString) == 19 and "-" in dateString:
-                month = dateString[:4]
-                day = dateString[4:6]
-                year = dateString[6:8]
+                year = dateString[:4]
+                month = dateString[4:6]
+                day = dateString[6:8]
                 hour = dateString[8:10]
                 minute = dateString[10:12]
                 second = dateString[12:14]
                 timeString = ":".join([hour, minute, second])
-                offset = timeString.split("-")[1]
+                offset = dateString.split("-")[1]
                 offset = offset[:2]
                 offset = int(offset)
                 tzInfo = datetime.timedelta(hours=offset)
+                tzInfo = datetime.timezone(tzInfo)
             else:
                 errorMessageLines = []
                 errorMessageLines.append("Unable to process date value")
@@ -235,6 +236,8 @@ class CATestResult(object):
             dateString = ""
             timeString = "%s:%s:%s" %(revertant.hour, revertant.minute, revertant.second)
         else:
+            if type(revertant) == tuple:
+                return revertant[0], revertant[1]
             raise ValueError("Got an invalid value trying to revert a datetime object to a string: %s of type %s" %(revertant, type(revertant)))
         return (dateString, timeString)
 

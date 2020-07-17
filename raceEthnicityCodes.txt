@@ -9,4 +9,4 @@
 PHC1369	not obtainable			
 PHC1367	refused			
 ASKU	asked but unknown			
-UNK	unknown			
+UNK	unknown	u		
