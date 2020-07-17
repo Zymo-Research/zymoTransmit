@@ -5,6 +5,7 @@ dev/*  # here be my development stash with who-knows-what
 .idea  # here be PyCharm development stuff
 *.pfx  # here be certificates
 config.txt  # here be more credentials and other sensitive information
+rejects.* # potentially more sensitive information
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

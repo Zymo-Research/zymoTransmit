@@ -1,30 +1,38 @@
-import os
-import sys
-import traceback
+try:
+    import os
+    import sys
+    import traceback
+    import csv
 
-contentRoot = os.path.split(os.path.abspath(__file__))[0]
+    contentRoot = os.path.split(os.path.abspath(__file__))[0]
 
-import typing
-import argparse
+    import typing
+    import argparse
 
-try: # Stuff will seriously break if there is no config file, so if it is missing, this will create the template
-    from zymoTransmitSupport import config
-except FileNotFoundError:
-    import shutil
-    cleanConfig = os.path.join(contentRoot, "zymoTransmitSupport", "configClean.txt")
-    newConfig = os.path.join(contentRoot, "config.txt")
-    shutil.copy(cleanConfig, newConfig)
-    print("No config file was found at the expected location. Please input your lab information into the config file at:\n%s" %(os.path.abspath(newConfig)))
+    try: # Stuff will seriously break if there is no config file, so if it is missing, this will create the template
+        from zymoTransmitSupport import config
+    except FileNotFoundError:
+        import shutil
+        cleanConfig = os.path.join(contentRoot, "zymoTransmitSupport", "configClean.txt")
+        newConfig = os.path.join(contentRoot, "config.txt")
+        shutil.copy(cleanConfig, newConfig)
+        print("No config file was found at the expected location. Please input your lab information into the config file at:\n%s" %(os.path.abspath(newConfig)))
+        import zymoTransmitSupport
+        if zymoTransmitSupport.gui.active:
+            print("Opening config file for editing. Please save and exit when done.")
+            zymoTransmitSupport.gui.textEditFile(newConfig)
+        else:
+            print("GUI appears inactive, unable to open configuration file")
+        input("Press enter to quit.")
+        quit()
+
     import zymoTransmitSupport
-    if zymoTransmitSupport.gui.active:
-        print("Opening config file for editing. Please save and exit when done.")
-        zymoTransmitSupport.gui.textEditFile(newConfig)
-    else:
-        print("GUI appears inactive, unable to open configuration file")
-    input("Press enter to quit.")
-    quit()
 
-import zymoTransmitSupport
+except Exception as err:
+    print("Encountered an unhandled error as follows:")
+    traceback.print_exc()
+    input("Run crashed before beginning. A common cause for this can be a corrupt config.txt file. Press enter to quit.")
+    sys.exit(1)
 
 
 class CheckArgs(object):
@@ -159,6 +167,19 @@ def makeHL7TextRecord(hl7Blocks:typing.Dict[typing.Tuple[str, str], str]):
     return textRecord
 
 
+def processRejects(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult]):
+    file = open(os.path.join(contentRoot, "rejects.csv"), 'a', newline="")
+    for result in resultList:
+        csvHandle = csv.writer(file)
+        if result.okToTransmit:
+            continue
+        if type(result.rawLine) == str:
+            print(result.rawLine, file=file, end="\n")
+        else:
+            csvHandle.writerow(result.rawLine)
+    file.close()
+
+
 def prepareAndSendResults(args:CheckArgs):
     if not args.hl7Directory:
         if os.path.abspath(args.input) == os.path.join(contentRoot, "config.txt"):
@@ -176,6 +197,7 @@ def prepareAndSendResults(args:CheckArgs):
             input("Press enter to quit.")
             quit()
     skippedData = []
+    resultList = []
     certificateFilePath = os.path.join(contentRoot, config.Connection.certificateFolder, config.Connection.certificateFileName)
     client, session = zymoTransmitSupport.inputOutput.connection.getSOAPClient(
         config.Connection.wsdlURL, certificateFilePath, dumpClientInfo=False)
@@ -202,6 +224,8 @@ def prepareAndSendResults(args:CheckArgs):
                 print("%s:%s was skipped" %(patientID, specimenID))
     else:
         print("Results not transmitted due to argument noTransmit being set to true.")
+    if skippedData:
+        processRejects(resultList)
 
 
 def makeDirectoriesIfNeeded():
@@ -209,6 +233,11 @@ def makeDirectoriesIfNeeded():
         os.mkdir(os.path.join(contentRoot, config.Connection.certificateFolder))
     if not os.path.isdir(os.path.join(contentRoot, config.Configuration.logFolder)):
         os.mkdir(os.path.join(contentRoot, config.Configuration.logFolder))
+    if not os.path.isfile(os.path.join(contentRoot, "rejects.csv")):
+        file = open(os.path.join(contentRoot, "rejects.csv"), 'w')
+        file.write("#Header for lines that were not transmitted due to issue with interpretation\n")
+        file.close()
+        print("something")
 
 
 class PlaceHolderException(Exception):
