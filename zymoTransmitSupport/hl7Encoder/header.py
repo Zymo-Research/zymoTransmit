@@ -1,6 +1,8 @@
 from .generics import Hl7Field
 from . import generics
 from .. import config
+
+
 fieldSeparator = "|"
 
 encodingCharacters = r"^~\&"
@@ -324,9 +326,17 @@ class MSHFromObject(generics.Hl7Line):
                  mshObject:config.Configuration.MSH,
                  uniqueID: UniqueID,
                  production:bool,
+                 resultAuxiliary:dict = None
                  ):
+        if not resultAuxiliary:
+            resultAuxiliary = {}
         self.sendingApplication = SendingApplication()
-        self.sendingFacility = SendingFacility.fromObject(mshObject.SendingFacility)
+        if "labName" in resultAuxiliary or "labCLIA"  in resultAuxiliary:
+            if not ("labName" in resultAuxiliary and "labCLIA"  in resultAuxiliary):
+                raise ValueError("Both lab name and lab CLIA must be present or absent from the resultAuxiliary")
+            self.sendingFacility = SendingFacility(resultAuxiliary["labName"], resultAuxiliary["labCLIA"])
+        else:
+            self.sendingFacility = SendingFacility.fromObject(mshObject.SendingFacility)
         self.receivingAppliation = ReceivingApplication.fromObject(mshObject.ReceivingApplication)
         self.receivingFacility = ReceivingFacility.fromObject(mshObject.ReceivingFacility)
         self.messageDateTime = TimeStamp()

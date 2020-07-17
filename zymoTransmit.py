@@ -29,7 +29,7 @@ import zymoTransmitSupport
 
 class CheckArgs(object):
 
-    __slots__ = ["input", "noTransmit", "hl7Directory"]
+    __slots__ = ["input", "noTransmit", "hl7Directory", "cdph"]
 
     def __init__(self):
         parser = argparse.ArgumentParser()
@@ -40,6 +40,7 @@ class CheckArgs(object):
         parser.add_argument("-e", "--editConfig", help = "Edit configuration file", action = 'store_true')
         parser.add_argument("-n", "--noTransmit", help = "Do not attempt to transmit data", action = 'store_true')
         parser.add_argument("-d", "--hl7Directory", help = "Upload a directory of HL7 files", action = 'store_true')
+        parser.add_argument("--cdph", help = "Read CDPH format with header line", action = 'store_true')
         parser.add_argument("input", help = "Input file", type = str, nargs='?')
         rawArgs = parser.parse_args()
         testConnection = rawArgs.testConnection
@@ -50,6 +51,7 @@ class CheckArgs(object):
         inputValue = rawArgs.input
         self.noTransmit = rawArgs.noTransmit
         self.hl7Directory = rawArgs.hl7Directory
+        self.cdph = rawArgs.cdph
         if self.hl7Directory and convertCertificate:
             raise RuntimeError("Error: Program cannot be set to both process a certificate AND take in a directory for upload")
         if testConnection or loinc or snomed:
@@ -108,8 +110,8 @@ def convertPFX(pfxPath:str, pfxPassword:str=None):
     return pemPath
 
 
-def getTestResults(testResultPath:str="results.txt"):
-    resultList = zymoTransmitSupport.inputOutput.resultReader.loadRawDataTable(testResultPath)
+def getTestResults(testResultPath:str="results.txt", cdphCSV:bool=False):
+    resultList = zymoTransmitSupport.inputOutput.resultReader.loadRawDataTable(testResultPath, cdphCSV)
     return resultList
 
 
@@ -120,7 +122,7 @@ def makeHL7Codes(resultList:typing.List[zymoTransmitSupport.inputOutput.resultRe
         specimenID = result.specimenID
         hl7Sets[(patientID, specimenID)] = []
         currentSet = hl7Sets[(patientID, specimenID)]
-        currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makeMSHLine())
+        currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makeMSHLine(result))
         currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makeSFTLine())
         currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makePIDLine(result))
         currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makeORCLine(result))
@@ -176,7 +178,7 @@ def prepareAndSendResults(args:CheckArgs):
             print("Using raw HL7 from file %s" %args.input)
             hl7TextBlocks = zymoTransmitSupport.inputOutput.rawHL7.textBlocksFromRawHL7(args.input)
         else:
-            resultList = getTestResults(args.input)
+            resultList = getTestResults(args.input, args.cdph)
             hl7Sets = makeHL7Codes(resultList)
             hl7TextBlocks = makeHL7Blocks(hl7Sets)
     hl7TextRecord = makeHL7TextRecord(hl7TextBlocks)

@@ -5,6 +5,7 @@ import zipcodes
 import collections
 import csv
 import typing
+from . import caResultReader
 
 
 class TestResult(object):
@@ -49,7 +50,7 @@ class TestResult(object):
          reportedTime,
          self.note,
          self.race,
-         self.ethnicity
+         self.ethnicity,
          ) = self.elementArray
         self.patientDateOfBirth = self.processDateAndTime(patientDateOfBirth, "")
         self.collectionDateTime = self.processDateAndTime(collectionDate, collectionTime)
@@ -270,7 +271,7 @@ def loadTextDataTable(filePath: str):
     return cleanedResults
 
 
-def loadCSVDataTable(filePath: str):
+def loadCSVDataTable(filePath: str, cdphCSV:bool=False):
     testResults = []
     if not os.path.isfile(filePath):
         raise FileNotFoundError("Unable to find input file at %s" % filePath)
@@ -286,6 +287,9 @@ def loadCSVDataTable(filePath: str):
         utf8 = False
     csvHandle = csv.reader(resultsFile)
     currentLine = 0
+    if cdphCSV:
+        header = next(csvHandle)
+        currentLine += 1
     line = next(csvHandle)
     currentLine += 1
     while line:
@@ -296,7 +300,12 @@ def loadCSVDataTable(filePath: str):
                 line = []
             currentLine += 1
             continue
-        testResults.append((currentLine, TestResult(line)))
+        if cdphCSV:
+            caTestResult = caResultReader.CATestResult(line)
+            testResultObject = caTestResult.convertToStandardResultObject()
+        else:
+            testResultObject = TestResult(line)
+        testResults.append((currentLine, testResultObject))
         try:
             line = next(csvHandle)
         except StopIteration:
@@ -327,8 +336,8 @@ def validateResultTable(rawResultTable: typing.List[typing.Tuple[int, TestResult
     return cleanedResults
 
 
-def loadRawDataTable(filePath: str):
+def loadRawDataTable(filePath: str, cdphCSV:bool=False):
     if filePath.lower().endswith(".csv"):
-        return loadCSVDataTable(filePath)
+        return loadCSVDataTable(filePath, cdphCSV)
     else:
         return loadTextDataTable(filePath)

@@ -32,7 +32,7 @@ def getFileList(targetDirectory:str):
 def processRawHL7Block(rawBlock:str):
     rawBlock = rawBlock.strip()
     if not softwareLineRegex.search(rawBlock):
-        softwareLine = hl7Encoder.encoders.makeSFTLine()
+        softwareLine = hl7Encoder.encoders.makeSFTLine(passThruMode=True)
         rawBlock = "%s\n%s" %(softwareLine, rawBlock)
     if not rawBlock.startswith("MSH|"):
         messageHeader = hl7Encoder.encoders.makeMSHLine()

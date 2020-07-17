@@ -14,13 +14,13 @@ from . import generics
 
 config = defaultConfig
 
-def makeMSHLine():
+def makeMSHLine(result:inputOutput.resultReader.TestResult):
     uniqueID = header.UniqueID(config.LabInfo.name, prependTime=True)
-    return header.MSHFromObject(config.Configuration.MSH, uniqueID, config.Configuration.productionReady)
+    return header.MSHFromObject(config.Configuration.MSH, uniqueID, config.Configuration.productionReady, result.auxiliaryData)
 
 
-def makeSFTLine():
-    return software.SoftwareLine()
+def makeSFTLine(passThruMode:bool=False):
+    return software.SoftwareLine(passThruMode)
 
 
 def makePIDLine(result:inputOutput.resultReader.TestResult):
@@ -61,12 +61,22 @@ def makePIDLine(result:inputOutput.resultReader.TestResult):
 
 
 def makeORCLine(result:inputOutput.resultReader.TestResult):
-    fillerOrderNumber = orderHeader.FillerOrderNumber(
-        "%s.%s" %(result.patientID, result.specimenID),
-        config.LabInfo.name,
-        config.LabInfo.clia,
-        "CLIA"
-    )
+    if "labName" in result.auxiliaryData or "labCLIA" in result.auxiliaryData:
+        if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
+            raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
+        fillerOrderNumber = orderHeader.FillerOrderNumber(
+            "%s.%s" % (result.patientID, result.specimenID),
+            result.auxiliaryData["labName"],
+            result.auxiliaryData["labCLIA"],
+            "CLIA"
+        )
+    else:
+        fillerOrderNumber = orderHeader.FillerOrderNumber(
+            "%s.%s" % (result.patientID, result.specimenID),
+            config.LabInfo.name,
+            config.LabInfo.clia,
+            "CLIA"
+        )
     orderingProvider = orderHeader.OrderingProvider(
         result.providerLastName,
         result.providerFirstName,
@@ -76,25 +86,49 @@ def makeORCLine(result:inputOutput.resultReader.TestResult):
     orderingFacilityAssigningAuthority = orderHeader.OrderingFacilityAssigningAuthority(
         "CLIA"
     )
-    orderingFacilityName = orderHeader.OrderingFacilityName(
-        config.LabInfo.name,
-        orderingFacilityAssigningAuthority,
-        config.LabInfo.clia
-    )
-    orderingFacilityAddress = orderHeader.OrderingFacilityAddress(
-        config.LabInfo.street,
-        config.LabInfo.city,
-        config.LabInfo.state,
-        config.LabInfo.zip
-    )
-    orderingFacilityPhone = orderHeader.OrderingFacilityPhone(config.LabInfo.phone)
+    if "labName" in result.auxiliaryData or "labCLIA" in result.auxiliaryData:
+        if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
+            raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
+        orderingFacilityName = orderHeader.OrderingFacilityName(
+            result.auxiliaryData["labName"],
+            orderingFacilityAssigningAuthority,
+            result.auxiliaryData["labCLIA"]
+        )
+    else:
+        orderingFacilityName = orderHeader.OrderingFacilityName(
+            config.LabInfo.name,
+            orderingFacilityAssigningAuthority,
+            config.LabInfo.clia,
+        )
+    if "labStreet" in result.auxiliaryData or "labCity" in result.auxiliaryData or "labState" in result.auxiliaryData or "labZip" in result.auxiliaryData:
+        if not (
+                "labStreet" in result.auxiliaryData and "labCity" in result.auxiliaryData and "labState" and result.auxiliaryData or "labZip" in result.auxiliaryData):
+            raise ValueError(
+                "All or no elements of lab address (street, city, state, zip) must be defined in auxiliary data")
+        orderingFacilityAddress = orderHeader.OrderingFacilityAddress(
+            result.auxiliaryData["labStreet"],
+            result.auxiliaryData["labCity"],
+            result.auxiliaryData["labState"],
+            result.auxiliaryData["labZip"]
+        )
+    else:
+        orderingFacilityAddress = orderHeader.OrderingFacilityAddress(
+            config.LabInfo.street,
+            config.LabInfo.city,
+            config.LabInfo.state,
+            config.LabInfo.zip
+        )
+    if "labPhone" in result.auxiliaryData:
+        orderingFacilityPhone = orderHeader.OrderingFacilityPhone(result.auxiliaryData["labPhone"])
+    else:
+        orderingFacilityPhone = orderHeader.OrderingFacilityPhone(config.LabInfo.phone)
+
     orderingProviderAddress = orderHeader.ProviderAddress(
         result.providerStreet,
         result.providerCity,
         result.providerState,
         result.providerZip
     )
-
     return orderHeader.OrderHeaderLine(
         fillerOrderNumber,
         orderingProvider,
@@ -107,12 +141,22 @@ def makeORCLine(result:inputOutput.resultReader.TestResult):
 
 
 def makeOBRLine(result:inputOutput.resultReader.TestResult):
-    fillerOrderNumber = orderRequest.FillerOrderNumber(
-        "%s.%s" %(result.patientID, result.specimenID),
-        config.LabInfo.name,
-        config.LabInfo.clia,
-        "CLIA"
-    )
+    if "labName" in result.auxiliaryData or "labCLIA" in result.auxiliaryData:
+        if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
+            raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
+        fillerOrderNumber = orderRequest.FillerOrderNumber(
+            "%s.%s" % (result.patientID, result.specimenID),
+            result.auxiliaryData["labName"],
+            result.auxiliaryData["labCLIA"],
+            "CLIA"
+        )
+    else:
+        fillerOrderNumber = orderRequest.FillerOrderNumber(
+            "%s.%s" % (result.patientID, result.specimenID),
+            config.LabInfo.name,
+            config.LabInfo.clia,
+            "CLIA"
+        )
     serviceData = loinc.loincTable[result.testLOINC]
     universalServiceIdentifier = orderRequest.UniversalServiceIdentifier(
         result.testLOINC,
@@ -192,16 +236,34 @@ def makeOBXLine(result:inputOutput.resultReader.TestResult):
         result.analysisDateTime.minute,
         result.analysisDateTime.second
     )
-    performingOrganization = observedResults.PerformingOrganization(
-        config.LabInfo.name,
-        config.LabInfo.clia
-    )
-    labAddress = observedResults.PerformingOrganizationLabAddress(
-        config.LabInfo.street,
-        config.LabInfo.city,
-        config.LabInfo.state,
-        config.LabInfo.zip
-    )
+    if "labName" in result.auxiliaryData or "labCLIA" in result.auxiliaryData:
+        if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
+            raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
+        performingOrganization = observedResults.PerformingOrganization(
+            result.auxiliaryData["labName"],
+            result.auxiliaryData["labCLIA"]
+        )
+    else:
+        performingOrganization = observedResults.PerformingOrganization(
+            config.LabInfo.name,
+            config.LabInfo.clia
+        )
+    if "labStreet" in result.auxiliaryData or "labCity" in result.auxiliaryData or "labState" in result.auxiliaryData or "labZip" in result.auxiliaryData:
+        if not ("labStreet" in result.auxiliaryData and "labCity" in result.auxiliaryData and "labState" and result.auxiliaryData or "labZip" in result.auxiliaryData):
+            raise ValueError("All or no elements of lab address (street, city, state, zip) must be defined in auxiliary data")
+        labAddress = observedResults.PerformingOrganizationLabAddress(
+            result.auxiliaryData["labStreet"],
+            result.auxiliaryData["labCity"],
+            result.auxiliaryData["labState"],
+            result.auxiliaryData["labZip"]
+        )
+    else:
+        labAddress = observedResults.PerformingOrganizationLabAddress(
+            config.LabInfo.street,
+            config.LabInfo.city,
+            config.LabInfo.state,
+            config.LabInfo.zip
+        )
     if config.LabDirectorInfo.assigningAuthority:
         medicalDirectorAssignmentAuthority = observedResults.MedicalDirectorNumberAssignmentAuthority(
             config.LabDirectorInfo.assigningAuthority
@@ -232,16 +294,30 @@ def makeOBXLine(result:inputOutput.resultReader.TestResult):
 
 def makeSPMLine(result:inputOutput.resultReader.TestResult):
     specimenData = snomed.snomedTable[result.specimenSNOMED]
+    if "labName" in result.auxiliaryData:
+        assignerName = result.auxiliaryData["labName"]
+    else:
+        assignerName = config.LabInfo.name
     specimenIDNumber = specimen.SpecimenIDNumber(
         result.specimenID,
-        config.LabInfo.name
+        assignerName
     )
-    fillerAssignedIdentifier = specimen.FillerAssignedIdentifier(
-        "%s.%s" %(result.patientID, result.specimenID),
-        config.LabInfo.name,
-        config.LabInfo.clia,
-        "CLIA"
-    )
+    if "labName" in result.auxiliaryData or "labCLIA" in result.auxiliaryData:
+        if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
+            raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
+        fillerAssignedIdentifier = specimen.FillerAssignedIdentifier(
+            "%s.%s" % (result.patientID, result.specimenID),
+            result.auxiliaryData["labName"],
+            result.auxiliaryData["labCLIA"],
+            "CLIA"
+        )
+    else:
+        fillerAssignedIdentifier = specimen.FillerAssignedIdentifier(
+            "%s.%s" % (result.patientID, result.specimenID),
+            config.LabInfo.name,
+            config.LabInfo.clia,
+            "CLIA"
+        )
     specimenID = specimen.SpecimenID(
         specimenIDNumber,
         fillerAssignedIdentifier

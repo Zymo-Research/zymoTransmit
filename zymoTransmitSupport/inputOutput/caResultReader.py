@@ -1,10 +1,7 @@
 import os
 import datetime
 import re
-import zipcodes
 import collections
-import csv
-import typing
 from . import resultReader
 
 loincRegex = re.compile(r"^\d{5}-\d$")
@@ -276,6 +273,10 @@ class CATestResult(object):
                 return throatSwabSNOMED
             else:
                 return swabNotOtherwiseSpecifiedSNOMED
+        elif  nasal:
+            return nasopharyngealSwabSNOMED
+        elif oral:
+            return throatSwabSNOMED
         elif blood:
             return bloodSNOMED
         else:
@@ -283,7 +284,7 @@ class CATestResult(object):
 
 
     def convertToStandardResultObject(self):
-        resultArray = [
+         resultArray = [
              self.patientID,
              self.patientLastName,
              self.patientFirstName,
@@ -317,57 +318,25 @@ class CATestResult(object):
              self.reportedTime,
              self.note,
              self.race,
-             self.ethnicity
-        ]
-        resultObject = resultReader.TestResult(resultArray)
-        auxiliaryData = {
-            NEED VALUES HERE
-        }
-        resultObject.auxiliaryData = auxiliaryData.copy()
-
-
-
-
+             self.ethnicity,
+         ]
+         resultObject = resultReader.TestResult(resultArray)
+         auxiliaryData = {
+             "sendingApplication": self.sendingApplication,
+             "labName": self.facilityName,
+             "labCLIA": self.facilityCLIA,
+             "labStreet": self.facilityStreet,
+             "labCity": self.facilityCity,
+             "labState": self.facilityState,
+             "labZip": self.facilityZip,
+             "labPhone": self.facilityPhone,
+             "okToContact": self.okToContact,
+             "insurance": self.insurance,
+             "expedited": self.expedited,
+             "unused": self.unused
+         }
+         resultObject.auxiliaryData = auxiliaryData.copy()
+         return resultObject
 
     def __str__(self):
         return ", ".join([str(item) for item in self.elementArray])
-
-
-def loadCSVDataTable(filePath: str):
-    testResults = []
-    if not os.path.isfile(filePath):
-        raise FileNotFoundError("Unable to find input file at %s" % filePath)
-    probeFile = open(filePath, 'rb')
-    probeBytes = probeFile.read(3)
-    probeFile.close()
-    if probeBytes == b'\xef\xbb\xbf':
-        resultsFile = open(filePath, 'r', encoding='utf-8-sig')
-        utf8 = True
-        #print("WARNING: This CSV appears to use UTF-8 encoding. This may cause errors. Please use plain ASCII (standard) CSV format in the future.") #This is probably unnecessary, although it does open the way for people to potentially use weird characters
-    else:
-        resultsFile = open(filePath, 'r')
-        utf8 = False
-    csvHandle = csv.reader(resultsFile)
-    currentLine = 0
-    line = next(csvHandle)
-    currentLine += 1
-    if line[0].strip() == "Sending Application":
-        line = next(csvHandle)
-        currentLine += 1
-    while line:
-        if not line or line[0].startswith("#"):
-            try:
-                line = next(csvHandle)
-            except StopIteration:
-                line = []
-            currentLine += 1
-            continue
-        testResults.append((currentLine, TestResult(line)))
-        try:
-            line = next(csvHandle)
-        except StopIteration:
-            line = []
-        currentLine += 1
-    resultsFile.close()
-    cleanedResults = validateResultTable(testResults)
-    return cleanedResults

@@ -12,7 +12,7 @@ class VendorOrg(Hl7Field):
 
     def __init__(self):
         self.orgName = "Zymo Research"
-        self.orgType = "L"  #TODO: Make sure JC is good with this being listed as our legal name
+        self.orgType = "L"
         self.idNumber = ""
         self.checkDigit = ""
         self.checkDigitScheme = ""
@@ -50,8 +50,10 @@ class Version(Hl7Field):
 
 class Name(Hl7Field):
 
-    def __init__(self):
+    def __init__(self, passThruMode:bool=False):
         self.softwareName = "Zymo Transmission"
+        if passThruMode:
+            self.softwareName += " - Pass Thru"
         self.subfields = [self.softwareName]
 
 
@@ -80,10 +82,10 @@ class InstallDate(Hl7Field):
 
 class SoftwareLine(generics.Hl7Line):
 
-    def __init__(self):
+    def __init__(self, passThruMode:bool=False):
         self.vendorOrg = VendorOrg()
         self.version = Version()
-        self.name = Name()
+        self.name = Name(passThruMode=passThruMode)
         self.binaryID = BinaryID()
         self.productInformation = ProductInformation()
         self.installDate = InstallDate()
