@@ -32,7 +32,7 @@ def getObservationValue(result:str):
     :param result: String describing the result. Must be in ["detected", "indeterminate", "negative"]
     :return: An appropriate result as a generics.SystemCode object
     '''
-    validResults = ["detected", "indeterminate", "negative", "unsatisfactory"]
+    validResults = ["detected", "indeterminate", "negative", "unsatisfactory", ""]
     if not result in validResults:
         raise ValueError("Result type must be in: " %validResults)
     if result == "detected":
@@ -43,6 +43,8 @@ def getObservationValue(result:str):
         return generics.SystemCode(code="260415000", text="Not detected", coding="SNOMED", codingSystemDateOrVersion="2.7")
     elif result == "unsatisfactory":
         return generics.SystemCode(code="125154007", text="Specimen unsatisfactory", coding="SNOMED", codingSystemDateOrVersion="2.7")
+    elif result == "":
+        return ""
     else:
         raise RuntimeError("This code should be unreachable if result validations is working properly and how we got here needs to be investigated")
 
@@ -61,7 +63,7 @@ def getAbnormalityObject(result:str):
     :param result: String describing the result. Must be in ["detected", "indeterminate", "negative"]
     :return: An appropriate result as a generics.SystemCode object
     '''
-    validResults = ["detected", "indeterminate", "negative", "unsatisfactory"]
+    validResults = ["detected", "indeterminate", "negative", "unsatisfactory", ""]
     if not result in validResults:
         raise ValueError("Result type must be in: " %validResults)
     if result == "detected":
@@ -72,6 +74,8 @@ def getAbnormalityObject(result:str):
         return generics.SystemCode(code="260415000", text="Not detected", coding="SNOMED", codingSystemDateOrVersion="2.7")
     elif result == "unsatisfactory":
         return generics.SystemCode(code="125154007", text="Specimen unsatisfactory", coding="SNOMED", codingSystemDateOrVersion="2.7")
+    elif result == "":
+        return ""
     else:
         raise RuntimeError("This code should be unreachable if result validations is working properly and how we got here needs to be investigated")
 

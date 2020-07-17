@@ -200,7 +200,9 @@ def makeOBRLine(result:inputOutput.resultReader.TestResult):
 def makeOBXLine(result:inputOutput.resultReader.TestResult):
     def makeObservationValueAndAbnormalityObjects(resultString:str):
         resultStringUpper = resultString.upper()
-        if resultStringUpper in config.ResultTerms.indeterminateResultTerms:
+        if "NOT DETECTED" in resultStringUpper:
+            resultTerm = "negative"
+        elif resultStringUpper in config.ResultTerms.indeterminateResultTerms:
             resultTerm = "indeterminate"
         elif resultStringUpper in config.ResultTerms.positiveResultTerms:
             resultTerm = "detected"
@@ -209,7 +211,10 @@ def makeOBXLine(result:inputOutput.resultReader.TestResult):
         elif resultStringUpper in config.ResultTerms.unsatisfactorySpecimenResultTerms:
             resultTerm = "unsatisfactory"
         else:
-            raise ValueError("Unable to classify result '%s'. Preferred terms are: detected, indeterminate, negative, and unsatisfactory specimen." %resultString)
+            print("Unable to classify result '%s' for patient %s specimen %s. Preferred terms are: detected, indeterminate, negative, and unsatisfactory specimen." %(resultString, result.patientID, result.specimenID))
+            resultTerm = ""
+            result.okToTransmit = False
+            result.reasonsNotToTransmit.append("Failed to interpret result value")
         return (observedResults.getObservationValue(resultTerm),
                 observedResults.getAbnormalityObject(resultTerm))
 

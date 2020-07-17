@@ -133,6 +133,11 @@ def makeHL7Codes(resultList:typing.List[zymoTransmitSupport.inputOutput.resultRe
         currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makeSPMLine(result))
         if result.note:
             currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makeNTELine(result))
+        if not result.okToTransmit:
+            print("Skipping preparation of %s:%s for the following reasons:" %(result.patientID, result.specimenID))
+            for reason in result.reasonsNotToTransmit:
+                print("\t%s" %reason)
+            del hl7Sets[(patientID, specimenID)]
     return hl7Sets
 
 

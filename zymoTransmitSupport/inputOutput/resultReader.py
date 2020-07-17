@@ -58,6 +58,8 @@ class TestResult(object):
         self.analysisDateTime = self.processDateAndTime(analysisDate, analysisTime)
         self.reportedDateTime = self.processDateAndTime(reportedDate, reportedTime)
         self.auxiliaryData = {}
+        self.okToTransmit = True
+        self.reasonsNotToTransmit = []
 
     def processRawLine(self, delimiter):
         rawLine = self.rawLine.strip()
