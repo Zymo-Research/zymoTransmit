@@ -39,18 +39,16 @@ def loadRawDataTable():
     dataTable = []
     for line in data:
         line = [element.strip() for element in line]
-        if len(line) == 7:
-            line.append("")
         dataTable.append(line)
     return dataTable
 
 
 def makeSnomedTable(data:list):
-    loincTable = {}
+    snomedTable = {}
     for line in data:
         code, fullName, preferredName = line
-        loincTable[code] = SNOMED(code, fullName, preferredName)
-    return loincTable
+        snomedTable[code] = SNOMED(code, fullName, preferredName)
+    return snomedTable
 
 
 def makeLookupTables(loincTable:typing.Dict[str, SNOMED]):

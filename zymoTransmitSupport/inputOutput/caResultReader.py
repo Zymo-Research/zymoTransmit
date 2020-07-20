@@ -19,6 +19,24 @@ nasalRegexList, oralRegexList, bloodRegexList = makeSpecimenRegexes()
 swabRegex = re.compile("SWAB", re.IGNORECASE)
 
 
+def getSnomedList(): # Doing this to avoid circular references and because SNOMED format is not specific enough
+    inputFileDirectory = os.path.split(os.path.abspath(__file__))[0]
+    inputFileDirectory = os.path.split(inputFileDirectory)[0]
+    inputFileDirectory = os.path.split(inputFileDirectory)[0]
+    inputFile = "snomedSpecimens.txt"
+    inputPath = os.path.join(inputFileDirectory, inputFile)
+    data = open(inputPath, 'r').readlines()
+    data = [line.strip() for line in data if line and not line.startswith("#")]
+    data = [line.split("\t") for line in data if line]
+    codeTable = []
+    for line in data:
+        line = [element.strip() for element in line]
+        codeTable.append(line[0])
+    return codeTable
+
+snomedList = getSnomedList()
+
+
 class CATestResult(object):
     expectedElements = 40
 
@@ -263,6 +281,9 @@ class CATestResult(object):
         bloodSNOMED = "788707000"
         swabNotOtherwiseSpecifiedSNOMED = "257261003"
         fields = [self.specimenType, self.specimenSite]
+        for field in fields:
+            if field in snomedList:
+                return field
         nasal = checkFields(nasalRegexList)
         swab = checkFields([swabRegex])
         oral = checkFields(oralRegexList)
