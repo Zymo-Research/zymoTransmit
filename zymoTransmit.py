@@ -109,6 +109,8 @@ class CheckArgs(object):
         if not self.hl7Directory and not os.path.isfile(inputValue):
             raise FileNotFoundError("No such file %s" %inputValue)
         self.input = inputValue
+        if os.path.abspath(self.input) == os.path.abspath(os.path.join(contentRoot, "rejects.csv")):
+            raise RuntimeError("Please avoid running this program directly on the rejects.csv file it creates.  Resubmitting this file after correcting any issues IS recommended, but only after renaming that file to something else.")
         if convertCertificate:
             convertPFX(self.input)
             input("Press enter to quit.")
@@ -127,7 +129,6 @@ def getTestResults(testResultPath:str="results.txt", cdphCSV:bool=False):
 
 def makeHL7Codes(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult]):
     hl7Sets = {}
-    skippedData = []
     for result in resultList:
         patientID = result.patientID
         specimenID = result.specimenID
@@ -144,11 +145,10 @@ def makeHL7Codes(resultList:typing.List[zymoTransmitSupport.inputOutput.resultRe
             currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makeNTELine(result))
         if not result.okToTransmit:
             print("Skipping preparation of %s:%s for the following reasons:" %(result.patientID, result.specimenID))
-            for reason in result.reasonsNotToTransmit:
+            for reason in result.reasonForFailedTransmission:
                 print("\t%s" %reason)
             del hl7Sets[(patientID, specimenID)]
-            skippedData.append((patientID, specimenID))
-    return hl7Sets, skippedData
+    return hl7Sets
 
 
 def makeHL7Blocks(hl7Sets:typing.Dict[typing.Tuple[str, str], typing.List[zymoTransmitSupport.hl7Encoder.generics.Hl7Line]]):
@@ -167,14 +167,14 @@ def makeHL7TextRecord(hl7Blocks:typing.Dict[typing.Tuple[str, str], str]):
     return textRecord
 
 
-def processRejects(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult]):
+def processRejects(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult], delimiter:str="\t"):
     file = open(os.path.join(contentRoot, "rejects.csv"), 'a', newline="")
     for result in resultList:
         csvHandle = csv.writer(file)
-        if result.okToTransmit:
+        if result.okToTransmit and result.transmittedSuccessfully:
             continue
         if type(result.rawLine) == str:
-            print(result.rawLine, file=file, end="\n")
+            csvHandle.writerow(result.rawLine.split(delimiter))
         else:
             csvHandle.writerow(result.rawLine)
     file.close()
@@ -211,17 +211,22 @@ def prepareAndSendResults(args:CheckArgs):
             hl7TextBlocks = zymoTransmitSupport.inputOutput.rawHL7.textBlocksFromRawHL7(args.input)
         else:
             resultList = getTestResults(args.input, args.cdph)
-            hl7Sets, skippedData = makeHL7Codes(resultList)
+            hl7Sets = makeHL7Codes(resultList)
             hl7TextBlocks = makeHL7Blocks(hl7Sets)
     hl7TextRecord = makeHL7TextRecord(hl7TextBlocks)
     if not args.noTransmit:
-        transmissionResults = zymoTransmitSupport.inputOutput.soapAPI.transmitBlocks(client, hl7TextBlocks)
+        transmissionResults = zymoTransmitSupport.inputOutput.soapAPI.transmitBlocks(client, hl7TextBlocks, resultList)
         resultText = zymoTransmitSupport.inputOutput.logger.writeLogFile(config.Configuration.logFolder, transmissionResults, hl7TextRecord)
         print(resultText)
+        for result in resultList:
+            if not (result.okToTransmit and result.transmittedSuccessfully):
+                skippedData.append((result.patientID, result.specimenID, result.reasonForFailedTransmission))
         if skippedData:
-            print("WARNING: Some results were skipped for reasons listed above:")
-            for patientID, specimenID in skippedData:
-                print("%s:%s was skipped" %(patientID, specimenID))
+            print("\n\nWARNING: SOME RESULTS WERE SKIPPED, FAILED TO TRANSMIT, OR WERE REJECTED BY THE GATEWAY FOR REASONS BELOW:\n")
+            for patientID, specimenID, reasons in skippedData:
+                print("%s:%s was not successfully transmitted because:" %(patientID, specimenID))
+                for reason in reasons:
+                    print("\t%s" %reason)
     else:
         print("Results not transmitted due to argument noTransmit being set to true.")
     if skippedData:
@@ -237,7 +242,6 @@ def makeDirectoriesIfNeeded():
         file = open(os.path.join(contentRoot, "rejects.csv"), 'w')
         file.write("#Header for lines that were not transmitted due to issue with interpretation\n")
         file.close()
-        print("something")
 
 
 class PlaceHolderException(Exception):

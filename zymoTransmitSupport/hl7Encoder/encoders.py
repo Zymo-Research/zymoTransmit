@@ -220,7 +220,7 @@ def makeOBXLine(result:inputOutput.resultReader.TestResult):
             print("Unable to classify result '%s' for patient %s specimen %s. Preferred terms are: detected, indeterminate, negative, and unsatisfactory specimen." %(resultString, result.patientID, result.specimenID))
             resultTerm = ""
             result.okToTransmit = False
-            result.reasonsNotToTransmit.append("Failed to interpret result value")
+            result.reasonForFailedTransmission.append("Failed to interpret result value. Please modify config.py to interpret the result value or modify the result value to something that is already interpreted.")
         return (observedResults.getObservationValue(resultTerm),
                 observedResults.getAbnormalityObject(resultTerm))
 

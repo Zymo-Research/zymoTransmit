@@ -14,6 +14,7 @@ class TestResult(object):
     def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
         self.rawLine = rawLine
         if type(self.rawLine) == str:
+            self.rawLine = self.rawLine.strip()
             self.elementArray = self.processRawLine(delimiter)
         elif isinstance(rawLine, collections.Iterable):
             self.elementArray = self.processList(self.rawLine)
@@ -59,7 +60,8 @@ class TestResult(object):
         self.reportedDateTime = self.processDateAndTime(reportedDate, reportedTime)
         self.auxiliaryData = {}
         self.okToTransmit = True
-        self.reasonsNotToTransmit = []
+        self.reasonForFailedTransmission = []
+        self.transmittedSuccessfully = None
 
     def processRawLine(self, delimiter):
         rawLine = self.rawLine.strip()

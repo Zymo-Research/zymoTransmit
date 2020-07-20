@@ -1,5 +1,7 @@
 import zeep
 from .. import config as defaultConfig
+from . import resultReader
+import typing
 
 config = defaultConfig
 
@@ -40,7 +42,17 @@ class SubmissionStatus:
         return outputBlock
 
 
-def transmitBlocks(client:zeep.Client, hl7Blocks:dict):
+def transmitBlocks(client:zeep.Client, hl7Blocks:dict, resultList:typing.List[resultReader.TestResult]=None):
+    def makeResultKey():
+        resultKey = {}
+        for index, result in enumerate(resultList):
+            key = (result.patientID, result.specimenID)
+            resultKey[key] = index
+        return resultKey
+    if resultList is None:
+        resultKey = {}
+    else:
+        resultKey = makeResultKey()
     client.raw_response = True
     submissionResults = []
     if config.Configuration.productionReady:
@@ -62,12 +74,20 @@ def transmitBlocks(client:zeep.Client, hl7Blocks:dict):
         except Exception as err:
             submissionStatus = SubmissionStatus(patientID, specimenID, None, str(err))
             print("ERROR: attempted to submit %s:%s, but it failed to return an error. See submission log for more details." %(patientID, specimenID))
+            if resultID in resultKey:
+                resultList[resultKey[resultID]].transmittedSuccessfully = False
+                resultList[resultKey[resultID]].reasonForFailedTransmission.append("Gateway failed to respond. This is likely a gateway issue and may self-resolve if given some time.")
         else:
             if response.status == "VALID":
                 submissionStatus = SubmissionStatus(patientID, specimenID, True, getattr(response, "return"))
                 print("Successfully submitted %s:%s" %(patientID, specimenID))
+                if resultID in resultKey:
+                    resultList[resultKey[resultID]].transmittedSuccessfully = True
             else:
                 submissionStatus = SubmissionStatus(patientID, specimenID, False, getattr(response, "return"))
                 print("ERROR: attempted to submit %s:%s, but it was rejected. See submission log for more details." %(patientID, specimenID))
+                if resultID in resultKey:
+                    resultList[resultKey[resultID]].transmittedSuccessfully = False
+                    resultList[resultKey[resultID]].reasonForFailedTransmission.append("Gateway rejected transmission. This indicates a likely error in the data and requires some correction before attempting to transmit again. See the log file for specific errors.")
         submissionResults.append(submissionStatus)
     return submissionResults
