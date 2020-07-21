@@ -87,8 +87,13 @@ class CATestResult(object):
          self.resultCode,
          self.unused
          ) = self.elementArray
-        if not self.specimenID:
-            self.specimenID = self.accession
+        if self.accession:
+            if self.specimenID:
+                holder = self.specimenID
+                self.specimenID = self.accession
+                self.accession = holder
+            else:
+                self.specimenID = self.accession
         self.patientDateOfBirth = self.processDateAndTime(patientDateOfBirth, "")
         self.collectionDateTime = self.processDateAndTime(collectionDate, "")
         self.reportedDateTime = self.processDateAndTime(reportedDateAndTime, "")
