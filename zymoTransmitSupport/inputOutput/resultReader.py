@@ -9,7 +9,7 @@ from . import caResultReader
 
 
 class TestResult(object):
-    expectedElements = 34
+    expectedElements = 35
 
     def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
         self.rawLine = rawLine
@@ -52,6 +52,7 @@ class TestResult(object):
          self.note,
          self.race,
          self.ethnicity,
+         self.accession
          ) = self.elementArray
         self.patientDateOfBirth = self.processDateAndTime(patientDateOfBirth, "")
         self.collectionDateTime = self.processDateAndTime(collectionDate, collectionTime)

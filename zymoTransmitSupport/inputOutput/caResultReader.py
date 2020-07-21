@@ -87,13 +87,6 @@ class CATestResult(object):
          self.resultCode,
          self.unused
          ) = self.elementArray
-        if self.accession:
-            if self.specimenID:
-                holder = self.specimenID
-                self.specimenID = self.accession
-                self.accession = holder
-            else:
-                self.specimenID = self.accession
         self.patientDateOfBirth = self.processDateAndTime(patientDateOfBirth, "")
         self.collectionDateTime = self.processDateAndTime(collectionDate, "")
         self.reportedDateTime = self.processDateAndTime(reportedDateAndTime, "")
@@ -348,6 +341,7 @@ class CATestResult(object):
              self.note,
              self.race,
              self.ethnicity,
+             self.accession
          ]
          resultObject = resultReader.TestResult(resultArray)
          auxiliaryData = {

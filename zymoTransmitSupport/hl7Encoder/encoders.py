@@ -67,18 +67,22 @@ def makePIDLine(result:inputOutput.resultReader.TestResult):
 
 
 def makeORCLine(result:inputOutput.resultReader.TestResult):
+    if result.accession:
+        orderID = result.accession
+    else:
+        orderID = "%s.%s" % (result.patientID, result.specimenID)
     if "labName" in result.auxiliaryData or "labCLIA" in result.auxiliaryData:
         if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
             raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
         fillerOrderNumber = orderHeader.FillerOrderNumber(
-            "%s.%s" % (result.patientID, result.specimenID),
+            orderID,
             result.auxiliaryData["labName"],
             result.auxiliaryData["labCLIA"],
             "CLIA"
         )
     else:
         fillerOrderNumber = orderHeader.FillerOrderNumber(
-            "%s.%s" % (result.patientID, result.specimenID),
+            orderID,
             config.LabInfo.name,
             config.LabInfo.clia,
             "CLIA"
@@ -147,18 +151,22 @@ def makeORCLine(result:inputOutput.resultReader.TestResult):
 
 
 def makeOBRLine(result:inputOutput.resultReader.TestResult):
+    if result.accession:
+        orderID = result.accession
+    else:
+        orderID = "%s.%s" % (result.patientID, result.specimenID)
     if "labName" in result.auxiliaryData or "labCLIA" in result.auxiliaryData:
         if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
             raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
         fillerOrderNumber = orderRequest.FillerOrderNumber(
-            "%s.%s" % (result.patientID, result.specimenID),
+            orderID,
             result.auxiliaryData["labName"],
             result.auxiliaryData["labCLIA"],
             "CLIA"
         )
     else:
         fillerOrderNumber = orderRequest.FillerOrderNumber(
-            "%s.%s" % (result.patientID, result.specimenID),
+            orderID,
             config.LabInfo.name,
             config.LabInfo.clia,
             "CLIA"
@@ -305,6 +313,10 @@ def makeOBXLine(result:inputOutput.resultReader.TestResult):
 
 def makeSPMLine(result:inputOutput.resultReader.TestResult):
     specimenData = snomed.snomedTable[result.specimenSNOMED]
+    if result.accession:
+        orderID = result.accession
+    else:
+        orderID = "%s.%s" % (result.patientID, result.specimenID)
     if "labName" in result.auxiliaryData:
         assignerName = result.auxiliaryData["labName"]
     else:
@@ -317,14 +329,14 @@ def makeSPMLine(result:inputOutput.resultReader.TestResult):
         if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
             raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
         fillerAssignedIdentifier = specimen.FillerAssignedIdentifier(
-            "%s.%s" % (result.patientID, result.specimenID),
+            orderID,
             result.auxiliaryData["labName"],
             result.auxiliaryData["labCLIA"],
             "CLIA"
         )
     else:
         fillerAssignedIdentifier = specimen.FillerAssignedIdentifier(
-            "%s.%s" % (result.patientID, result.specimenID),
+            orderID,
             config.LabInfo.name,
             config.LabInfo.clia,
             "CLIA"
