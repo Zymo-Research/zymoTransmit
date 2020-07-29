@@ -15,7 +15,7 @@ from . import generics
 config = defaultConfig
 
 def makeMSHLine(result:inputOutput.resultReader.TestResult):
-    uniqueID = header.UniqueID(config.LabInfo.name, prependTime=True)
+    uniqueID = header.UniqueID(config.Connection.userName, prependTime=True)
     return header.MSHFromObject(config.Configuration.MSH, uniqueID, config.Configuration.productionReady, result.auxiliaryData)
 
 

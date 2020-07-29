@@ -122,7 +122,7 @@ class UniqueID(Hl7Field):
     def __init__(self, id:str, prependTime:bool=True):
         self.id = id
         if prependTime:
-            self.id = generics.makeCurrentTimeString() + self.id
+            self.id = generics.makeCurrentTimeString() + "." + self.id
         self.subfields = [self.id[:199]]
 
 
