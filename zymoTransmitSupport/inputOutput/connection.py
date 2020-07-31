@@ -16,5 +16,6 @@ def getSOAPClient(wsdlURL:str, clientCertificatePath:str=None, dumpClientInfo:bo
         print("Server returned:")
         client.wsdl.dump()
         if testOnly:
+            input("Press ENTER key to quit.")
             quit()
     return client, session

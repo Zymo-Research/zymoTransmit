@@ -12,6 +12,9 @@ class TestResult(object):
     expectedElements = 35
 
     def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
+        self.okToTransmit = True
+        self.reasonForFailedTransmission = []
+        self.transmittedSuccessfully = None
         self.rawLine = rawLine
         if type(self.rawLine) == str:
             self.rawLine = self.rawLine.strip()
@@ -60,9 +63,6 @@ class TestResult(object):
         self.analysisDateTime = self.processDateAndTime(analysisDate, analysisTime)
         self.reportedDateTime = self.processDateAndTime(reportedDate, reportedTime)
         self.auxiliaryData = {}
-        self.okToTransmit = True
-        self.reasonForFailedTransmission = []
-        self.transmittedSuccessfully = None
 
     def processRawLine(self, delimiter):
         rawLine = self.rawLine.strip()
@@ -75,9 +75,12 @@ class TestResult(object):
         if not len(rawLine) == self.expectedElements:
             errorMessageLines = []
             errorMessageLines.append("Got a line with an unexpected number of elements")
-            errorMessageLines.append("Expecting %s elements, but only got %s." % (self.expectedElements, len(rawLine)))
+            errorMessageLines.append("Expecting %s elements, but got %s." % (self.expectedElements, len(rawLine)))
             errorMessageLines.append("Elements: %s" % rawLine)
-            raise ValueError("\n".join(errorMessageLines))
+            # raise ValueError("\n".join(errorMessageLines))
+            print("\n".join(errorMessageLines))
+            self.okToTransmit = False
+            self.reasonForFailedTransmission.append("Line has too many elements")
         return rawLine
 
     def processList(self, rawLine):
@@ -92,7 +95,10 @@ class TestResult(object):
             errorMessageLines.append("Got a line with an unexpected number of elements")
             errorMessageLines.append("Expecting %s elements, but only got %s." % (self.expectedElements, len(processedList)))
             errorMessageLines.append("Elements: %s" % processedList)
-            raise ValueError("\n".join(errorMessageLines))
+            # raise ValueError("\n".join(errorMessageLines))
+            print("\n".join(errorMessageLines))
+            self.okToTransmit = False
+            self.reasonForFailedTransmission.append("Line has too many elements")
         return processedList
 
     def processDateAndTime(self, dateString: str, timeString: str, possibleDateDelimiters="/-. ",
@@ -116,7 +122,11 @@ class TestResult(object):
                 errorMessageLines.append("Unable to process date value")
                 errorMessageLines.append("Attempting to process '%s' as a date failed." % dateString)
                 errorMessageLines.append("Elements: %s" % self.elementArray)
-                raise ValueError("\n".join(errorMessageLines))
+                # raise ValueError("\n".join(errorMessageLines))
+                print("\n".join(errorMessageLines))
+                self.okToTransmit = False
+                self.reasonForFailedTransmission.append("Unable to process %s as date" %dateString)
+                return datetime.datetime(1, 1, 1, 0, 0, 0)
         else:
             dateSplit = dateString.split(dateDelimiter)
             if not len(dateSplit) == 3:
@@ -125,7 +135,11 @@ class TestResult(object):
                 errorMessageLines.append(
                     "Attempting to process '%s' as a date with delimiter '%s' failed." % (dateString, dateDelimiter))
                 errorMessageLines.append("Elements: %s" % self.elementArray)
-                raise ValueError("\n".join(errorMessageLines))
+                # raise ValueError("\n".join(errorMessageLines))
+                print("\n".join(errorMessageLines))
+                self.okToTransmit = False
+                self.reasonForFailedTransmission.append("Attempting to process '%s' as a date with delimiter '%s' failed." % (dateString, dateDelimiter))
+                return datetime.datetime(1, 1, 1, 0, 0, 0)
             month, day, year = dateSplit
         timeDelimiter = None
         for possibleDelimiter in possibleTimeDelimiters:
@@ -143,7 +157,11 @@ class TestResult(object):
                 errorMessageLines.append("Unable to process time value")
                 errorMessageLines.append(
                     "Attempting to process '%s' as a time with no delimiter failed." % timeString)
-                raise ValueError("\n".join(errorMessageLines))
+                # raise ValueError("\n".join(errorMessageLines))
+                print("\n".join(errorMessageLines))
+                self.okToTransmit = False
+                self.reasonForFailedTransmission.append("Attempting to process '%s' as a time with no delimiter failed." % timeString)
+                return datetime.datetime(1, 1, 1, 0, 0, 0)
             hour = int(timeString[:2])
             minute = int(timeString[2:4])
             second = int(timeString[4:])
@@ -162,7 +180,11 @@ class TestResult(object):
                 errorMessageLines.append(
                     "Attempting to process '%s' as a time with delimiter '%s' failed." % (timeString, timeDelimiter))
                 errorMessageLines.append("Elements: %s" % self.elementArray)
-                raise ValueError("\n".join(errorMessageLines))
+                # raise ValueError("\n".join(errorMessageLines))
+                print("\n".join(errorMessageLines))
+                self.okToTransmit = False
+                self.reasonForFailedTransmission.append("Attempting to process '%s' as a time with delimiter '%s' failed." % (timeString, timeDelimiter))
+                return datetime.datetime(1, 1, 1, 0, 0, 0)
             hourCheck = hour in range(24)
             minuteCheck = minute in range(60)
             secondCheck = second in range(60)
@@ -173,7 +195,12 @@ class TestResult(object):
                     "Attempting to process '%s' as a time with delimiter '%s' returned a value out of range (hour not between 0 and 23 or second not between 0 and 59)." % (
                     timeString, timeDelimiter))
                 errorMessageLines.append("Elements: %s" % self.elementArray)
-                raise ValueError("\n".join(errorMessageLines))
+                # raise ValueError("\n".join(errorMessageLines))
+                print("\n".join(errorMessageLines))
+                self.okToTransmit = False
+                self.reasonForFailedTransmission.append("Attempting to process '%s' as a time with delimiter '%s' returned a value out of range (hour not between 0 and 23 or second not between 0 and 59)." % (
+                    timeString, timeDelimiter))
+                return datetime.datetime(1, 1, 1, 0, 0, 0)
         try:
             dateTimeObject = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
         except ValueError as err:
