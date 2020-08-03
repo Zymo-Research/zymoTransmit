@@ -62,14 +62,10 @@ class TestResult(object):
          self.equipmentDescription,
          self.equipmentID
          ) = self.elementArray
-        if not (self.patientID or self.specimenID or self.accession):
-            raise ValueError("All samples must have at least one of the following IDs: accession, specimen, or patient")
+        if not (self.specimenID or self.accession):
+            raise ValueError("All samples must have either specimen ID or accession number")
         if not self.accession:
-            if self.patientID and self.specimenID:
-                divider = ":"
-            else:
-                divider = ""
-            self.accession = "%s%s%s" %(self.patientID, divider, self.specimenID)
+            self.accession = self.specimenID
         if not self.specimenID:
             self.specimenID = self.accession
         if not self.patientID:

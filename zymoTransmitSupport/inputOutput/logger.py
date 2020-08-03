@@ -3,7 +3,7 @@ from . import soapAPI
 import typing
 import os
 
-columns = ["#Patient", "Specimen", "Status", "Notes"]
+columns = ["#Accession", "Status", "Notes"]
 
 
 def timeStamp():
