@@ -127,13 +127,23 @@ class ObservationMethod(Hl7Field):
             "",
             self.code[:20],
             self.description[:199],
-            "L"
+            "L",
+            "",
+            "v unknown"
         ]
 
 
 
-class EquipmentInstanceIdentifier(generics.SingleValueField):
-    pass
+class EquipmentInstanceIdentifier(Hl7Field):
+
+    def __init__(self, instanceIdentifier:str):
+        self.instanceIdentifier = instanceIdentifier
+        self.subfields = [
+            self.instanceIdentifier[:199],
+            "manufacturer",
+            "NA",
+            "ISO"
+        ]
 
 
 class AnalysisDateAndTime(generics.DateAndTime):
