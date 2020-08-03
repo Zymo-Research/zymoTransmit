@@ -9,7 +9,7 @@ from . import caResultReader
 
 
 class TestResult(object):
-    expectedElements = 35
+    expectedElements = 40
 
     def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
         self.okToTransmit = True
