@@ -67,10 +67,7 @@ def makePIDLine(result:inputOutput.resultReader.TestResult):
 
 
 def makeORCLine(result:inputOutput.resultReader.TestResult):
-    if result.accession:
-        orderID = result.accession
-    else:
-        orderID = "%s.%s" % (result.patientID, result.specimenID)
+    orderID = result.accession
     if "labName" in result.auxiliaryData or "labCLIA" in result.auxiliaryData:
         if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
             raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
@@ -139,6 +136,14 @@ def makeORCLine(result:inputOutput.resultReader.TestResult):
         result.providerState,
         result.providerZip
     )
+    orderEffectiveDateTime = orderHeader.OrderEffectiveTime(
+        result.testOrderedDateTime.year,
+        result.testOrderedDateTime.month,
+        result.testOrderedDateTime.day,
+        result.testOrderedDateTime.hour,
+        result.testOrderedDateTime.minute,
+        result.testOrderedDateTime.second
+    )
     return orderHeader.OrderHeaderLine(
         fillerOrderNumber,
         orderingProvider,
@@ -146,15 +151,13 @@ def makeORCLine(result:inputOutput.resultReader.TestResult):
         orderingFacilityName,
         orderingFacilityAddress,
         orderingFacilityPhone,
+        orderEffectiveDateTime,
         orderingProviderAddress
     )
 
 
 def makeOBRLine(result:inputOutput.resultReader.TestResult):
-    if result.accession:
-        orderID = result.accession
-    else:
-        orderID = "%s.%s" % (result.patientID, result.specimenID)
+    orderID = result.accession
     if "labName" in result.auxiliaryData or "labCLIA" in result.auxiliaryData:
         if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
             raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
@@ -255,6 +258,23 @@ def makeOBXLine(result:inputOutput.resultReader.TestResult):
         result.analysisDateTime.minute,
         result.analysisDateTime.second
     )
+    if not result.equipmentCode:
+        equipmentCode = defaultConfig.TestInformation.testID
+        equipmentDescription = defaultConfig.TestInformation.testDescription
+    else:
+        equipmentCode = result.equipmentCode
+        equipmentDescription = result.equipmentDescription
+    if not result.equipmentID:
+        equipmentID = defaultConfig.TestInformation.testEquipmentID
+    else:
+        equipmentID = result.equipmentID
+    observationMethod = observedResults.ObservationMethod(
+        equipmentCode,
+        equipmentDescription
+    )
+    equipmentID = observedResults.EquipmentInstanceIdentifier(
+        equipmentID
+    )
     if "labName" in result.auxiliaryData or "labCLIA" in result.auxiliaryData:
         if not ("labName" in result.auxiliaryData and "labCLIA" in result.auxiliaryData):
             raise ValueError("Lab name and lab CLIA must both be either present or absent in auxiliary data")
@@ -307,7 +327,9 @@ def makeOBXLine(result:inputOutput.resultReader.TestResult):
         analysisDateTime,
         performingOrganization,
         labAddress,
-        performingOrganizationMedicalDirector
+        performingOrganizationMedicalDirector,
+        observationMethod,
+        equipmentID
     )
 
 

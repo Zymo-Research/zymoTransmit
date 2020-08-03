@@ -38,6 +38,11 @@ MD Assigning Authority: NPI
 ### This may need to be a CLIA number or an ASM identifier or other number, depending upon who certified your
 ### medical director. A physician's NPI number can be easily searched on https://npiregistry.cms.hhs.gov/
 
+## Information on your testing method
+Test ID Code:
+Test Description:
+Test Equipment ID:
+
 ## Connection Information
 Gateway User:
 Gateway Password:

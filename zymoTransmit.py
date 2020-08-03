@@ -122,18 +122,32 @@ def convertPFX(pfxPath:str, pfxPassword:str=None):
     return pemPath
 
 
+def getDuplicateAccessions(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult]):
+    accessionSet = set()
+    duplicates = set()
+    for result in resultList:
+        if not result.accession in accessionSet:
+            accessionSet.add(result.accession)
+        else:
+            duplicates.add(result.accession)
+    return list(duplicates)
+
+
 def getTestResults(testResultPath:str="results.txt", cdphCSV:bool=False):
     resultList = zymoTransmitSupport.inputOutput.resultReader.loadRawDataTable(testResultPath, cdphCSV)
-    return resultList
+    duplicateAccessions = getDuplicateAccessions(resultList)
+    if not duplicateAccessions:
+        return resultList
+    else:
+        raise KeyError("Submission list cannot contain duplicate identifiers. Unique accession numbers are required or unique patient ID/specimen ID combos.\nDuplicate values: %s" %duplicateAccessions)
 
 
 def makeHL7Codes(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult]):
     hl7Sets = {}
     for result in resultList:
-        patientID = result.patientID
-        specimenID = result.specimenID
-        hl7Sets[(patientID, specimenID)] = []
-        currentSet = hl7Sets[(patientID, specimenID)]
+        currentAccession = result.accession
+        hl7Sets[currentAccession] = []
+        currentSet = hl7Sets[currentAccession]
         currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makeMSHLine(result))
         currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makeSFTLine())
         currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makePIDLine(result))
@@ -147,11 +161,11 @@ def makeHL7Codes(resultList:typing.List[zymoTransmitSupport.inputOutput.resultRe
             print("Skipping preparation of %s:%s for the following reasons:" %(result.patientID, result.specimenID))
             for reason in result.reasonForFailedTransmission:
                 print("\t%s" %reason)
-            del hl7Sets[(patientID, specimenID)]
+            del hl7Sets[currentAccession]
     return hl7Sets
 
 
-def makeHL7Blocks(hl7Sets:typing.Dict[typing.Tuple[str, str], typing.List[zymoTransmitSupport.hl7Encoder.generics.Hl7Line]]):
+def makeHL7Blocks(hl7Sets:typing.Dict[str, typing.List[zymoTransmitSupport.hl7Encoder.generics.Hl7Line]]):
     hl7Blocks = {}
     for resultID, hl7Set in hl7Sets.items():
         textBlock = "\n".join(str(line) for line in hl7Set)
@@ -160,7 +174,7 @@ def makeHL7Blocks(hl7Sets:typing.Dict[typing.Tuple[str, str], typing.List[zymoTr
     return hl7Blocks
 
 
-def makeHL7TextRecord(hl7Blocks:typing.Dict[typing.Tuple[str, str], str]):
+def makeHL7TextRecord(hl7Blocks:typing.Dict[str, str]):
     textRecord = ""
     for identifier, text in hl7Blocks.items():
         textRecord += text

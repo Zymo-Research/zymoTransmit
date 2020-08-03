@@ -52,49 +52,55 @@ configDict = readConfigurationFile()
 
 
 class LabInfo:
-    name = configDict["lab name"]
-    phone = configDict["lab phone"]
-    email = configDict["lab email"]
-    street = configDict["lab street"]
-    city = configDict["lab city"]
-    state = configDict["lab state"]
-    zip = configDict["lab zip"]
-    country = configDict["lab country"]
-    clia = configDict["lab clia id"]
-    iso = configDict["lab iso"]
+    name = configDict.setdefault("lab name", "")
+    phone = configDict.setdefault("lab phone", "")
+    email = configDict.setdefault("lab email", "")
+    street = configDict.setdefault("lab street", "")
+    city = configDict.setdefault("lab city", "")
+    state = configDict.setdefault("lab state", "")
+    zip = configDict.setdefault("lab zip", "")
+    country = configDict.setdefault("lab country", "")
+    clia = configDict.setdefault("lab clia id", "")
+    iso = configDict.setdefault("lab iso", "")
     gmt_offset = time.timezone/(60*60)
 
 
 class LabDirectorInfo:
-    firstName = configDict["md first name"]
-    lastName = configDict["md last name"]
-    middleName = configDict["md middle name"]
-    prefix = configDict["md prefix"]
-    suffix = configDict["md personal suffix"]
-    professionalSuffix = configDict["md professional suffix"]
-    phone = configDict["md phone"]
-    email = configDict["md email"]
-    street = configDict["md street"]
-    city = configDict["md city"]
-    state = configDict["md state"]
-    zip = configDict["md zip"]
-    country = configDict["md country"]
-    identifier = configDict["md identifier number"]
-    assigningAuthority = configDict["md assigning authority"]
+    firstName = configDict.setdefault("md first name", "")
+    lastName = configDict.setdefault("md last name", "")
+    middleName = configDict.setdefault("md middle name", "")
+    prefix = configDict.setdefault("md prefix", "")
+    suffix = configDict.setdefault("md personal suffix", "")
+    professionalSuffix = configDict.setdefault("md professional suffix", "")
+    phone = configDict.setdefault("md phone", "")
+    email = configDict.setdefault("md email", "")
+    street = configDict.setdefault("md street", "")
+    city = configDict.setdefault("md city", "")
+    state = configDict.setdefault("md state", "")
+    zip = configDict.setdefault("md zip", "")
+    country = configDict.setdefault("md country", "")
+    identifier = configDict.setdefault("md identifier number", "")
+    assigningAuthority = configDict.setdefault("md assigning authority", "")
+
+
+class TestInformation:
+    testID = configDict.setdefault("test id code", "")
+    testDescription = configDict.setdefault("test description", "")
+    testEquipmentID = configDict.setdefault("test equipment id", "")
 
 
 class Connection:
-    wsdlURL = configDict["wsdl url"]
-    submissionURL = configDict["submission url"]
-    certificateFolder = configDict["certificate folder"]
-    certificateFileName = configDict["certificate file name"]
-    userName = configDict["gateway user"]
-    password = configDict["gateway password"]
+    wsdlURL = configDict.setdefault("wsdl url", "")
+    submissionURL = configDict.setdefault("submission url", "")
+    certificateFolder = configDict.setdefault("certificate folder", "")
+    certificateFileName = configDict.setdefault("certificate file name", "")
+    userName = configDict.setdefault("gateway user", "")
+    password = configDict.setdefault("gateway password", "")
 
 
 class Configuration:
-    productionReady = not configDict["in testing"]
-    logFolder = configDict["log folder"]
+    productionReady = not configDict.setdefault("in testing", True)
+    logFolder = configDict.setdefault("log folder", "")
     class MSH:
         class SendingFacility:
             name = LabInfo.name
@@ -102,29 +108,29 @@ class Configuration:
             idType = "CLIA"
 
         class ReceivingApplication:
-            name = configDict["receiver name"]
-            id = configDict["receiver id"]
-            idType = configDict["receiver id type"]
+            name = configDict.setdefault("receiver name", "")
+            id = configDict.setdefault("receiver id", "")
+            idType = configDict.setdefault("receiver id type", "")
 
         class ReceivingFacility:
-            name = configDict["receiving facility"]
-            id = configDict["receiving facility id"]
-            idType = configDict["receiving facility id type"]
+            name = configDict.setdefault("receiving facility", "")
+            id = configDict.setdefault("receiving facility id", "")
+            idType = configDict.setdefault("receiving facility id type", "")
 
         class MessageType:
-            code = configDict["message type code"]
-            triggerEvent = configDict["message trigger event"]
-            structure = configDict["message structure"]
+            code = configDict.setdefault("message type code", "")
+            triggerEvent = configDict.setdefault("message trigger event", "")
+            structure = configDict.setdefault("message structure", "")
 
         class ProcessingID:
-            testing = configDict["testing environment id"]
-            production = configDict["production environment id"]
+            testing = configDict.setdefault("testing environment id", "")
+            production = configDict.setdefault("production environment id", "")
 
         class MessageProfileIdentifier:
-            entity = configDict["message profile entity"]
-            nameSpace = configDict["message profile namespace"]
-            universalID = configDict["message profile universal id"]
-            idType = configDict["message profile universal id type"]
+            entity = configDict.setdefault("message profile entity", "")
+            nameSpace = configDict.setdefault("message profile namespace", "")
+            universalID = configDict.setdefault("message profile universal id", "")
+            idType = configDict.setdefault("message profile universal id type", "")
 
     class PID:
         class IDAssigner:

@@ -7,14 +7,13 @@ config = defaultConfig
 
 class SubmissionStatus:
 
-    def __init__(self, patientID:str, specimenID:str, successfullyTransmitted:[bool, None], notes:str):
-        self.patientID = patientID
-        self.specimenID = specimenID
+    def __init__(self, identifier:str, successfullyTransmitted:[bool, None], notes:str):
+        self.identifier = identifier
         self.success = successfullyTransmitted
         self.notes = notes
 
     def logList(self):
-        logList = [self.patientID, self.specimenID]
+        logList = [self.identifier]
         if self.success:
             logList.append("Success")
         elif self.success is None:
@@ -34,7 +33,7 @@ class SubmissionStatus:
             statusStatement = "TRANSMISSION ERROR"
         else:
             statusStatement = "TRANSMISSION FAILED"
-        firstLine = "%s:%s - %s" %(self.patientID, self.specimenID, statusStatement)
+        firstLine = "%s - %s" %(self.identifier, statusStatement)
         outputLines.append(firstLine)
         if self.notes:
             outputLines.append("\t%s" %self.notes)
@@ -46,7 +45,7 @@ def transmitBlocks(client:zeep.Client, hl7Blocks:dict, resultList:typing.List[re
     def makeResultKey():
         resultKey = {}
         for index, result in enumerate(resultList):
-            key = (result.patientID, result.specimenID)
+            key = result.accession
             resultKey[key] = index
         return resultKey
     if resultList is None:
@@ -59,8 +58,7 @@ def transmitBlocks(client:zeep.Client, hl7Blocks:dict, resultList:typing.List[re
         productionCode = config.Configuration.MSH.ProcessingID.production
     else:
         productionCode = config.Configuration.MSH.ProcessingID.testing
-    for resultID, text in hl7Blocks.items():
-        patientID, specimenID = resultID
+    for accession, text in hl7Blocks.items():
         try:
             response = client.service.submitMessage(
                 userid = config.Connection.userName,
@@ -72,22 +70,22 @@ def transmitBlocks(client:zeep.Client, hl7Blocks:dict, resultList:typing.List[re
                 messagecontent = "<![CDATA[%s]]" %text
             )
         except Exception as err:
-            submissionStatus = SubmissionStatus(patientID, specimenID, None, str(err))
-            print("ERROR: attempted to submit %s:%s, but it failed to return an error. See submission log for more details." %(patientID, specimenID))
-            if resultID in resultKey:
-                resultList[resultKey[resultID]].transmittedSuccessfully = False
-                resultList[resultKey[resultID]].reasonForFailedTransmission.append("Gateway failed to respond. This is likely a gateway issue and may self-resolve if given some time.")
+            submissionStatus = SubmissionStatus(accession, None, str(err))
+            print("ERROR: attempted to submit %s, but it failed to return an error. See submission log for more details." %accession)
+            if accession in resultKey:
+                resultList[resultKey[accession]].transmittedSuccessfully = False
+                resultList[resultKey[accession]].reasonForFailedTransmission.append("Gateway failed to respond. This is likely a gateway issue and may self-resolve if given some time.")
         else:
             if response.status == "VALID":
-                submissionStatus = SubmissionStatus(patientID, specimenID, True, getattr(response, "return"))
-                print("Successfully submitted %s:%s" %(patientID, specimenID))
-                if resultID in resultKey:
-                    resultList[resultKey[resultID]].transmittedSuccessfully = True
+                submissionStatus = SubmissionStatus(accession, True, getattr(response, "return"))
+                print("Successfully submitted %s" %accession)
+                if accession in resultKey:
+                    resultList[resultKey[accession]].transmittedSuccessfully = True
             else:
-                submissionStatus = SubmissionStatus(patientID, specimenID, False, getattr(response, "return"))
-                print("ERROR: attempted to submit %s:%s, but it was rejected. See submission log for more details." %(patientID, specimenID))
-                if resultID in resultKey:
-                    resultList[resultKey[resultID]].transmittedSuccessfully = False
-                    resultList[resultKey[resultID]].reasonForFailedTransmission.append("Gateway rejected transmission. This indicates a likely error in the data and requires some correction before attempting to transmit again. See the log file for specific errors.")
+                submissionStatus = SubmissionStatus(accession, False, getattr(response, "return"))
+                print("ERROR: attempted to submit %s, but it was rejected. See submission log for more details." %accession)
+                if accession in resultKey:
+                    resultList[resultKey[accession]].transmittedSuccessfully = False
+                    resultList[resultKey[accession]].reasonForFailedTransmission.append("Gateway rejected transmission. This indicates a likely error in the data and requires some correction before attempting to transmit again. See the log file for specific errors.")
         submissionResults.append(submissionStatus)
     return submissionResults

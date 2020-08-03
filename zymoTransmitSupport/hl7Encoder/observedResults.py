@@ -116,11 +116,23 @@ class ResponsibleObserver(Hl7Field):
     pass
 
 
-class ObservationMethod(Hl7Field): #Going to see if I can leave this one out for now
-    pass
+class ObservationMethod(Hl7Field):
+    # At some point, this should become an encoded value field, but the coding system seems hard to access
+    def __init__(self, code:str, description:str):
+        self.code = code
+        self.description = description
+        self.subfields = [
+            "",
+            "",
+            "",
+            self.code[:20],
+            self.description[:199],
+            "L"
+        ]
 
 
-class EquipmentInstanceIdentifier(Hl7Field):
+
+class EquipmentInstanceIdentifier(generics.SingleValueField):
     pass
 
 
@@ -190,6 +202,8 @@ class ObservedResultsLine(generics.Hl7Line):
                  performingOrganization:PerformingOrganization,
                  performingOrganizationAddress:PerformingOrganizationLabAddress,
                  performingOrganizationMedicalDirector:PerformingOrganizationMedicalDirector,
+                 observationMethod:ObservationMethod,
+                 equipmentIdentifier:EquipmentInstanceIdentifier,
                  observationResultStatus:ObservationResultStatus=ObservationResultStatus()
                  ):
         self.obxSet = OBXSet()
@@ -208,8 +222,8 @@ class ObservedResultsLine(generics.Hl7Line):
         self.observationDateAndTime = observationDateAndTime
         self.producersID = ProducersID()
         self.responsibleObserver = ResponsibleObserver()
-        self.observationMethod = ObservationMethod()
-        self.equipmentInstanceIdentifier = EquipmentInstanceIdentifier()
+        self.observationMethod = observationMethod
+        self.equipmentInstanceIdentifier = equipmentIdentifier
         self.analysisDateAndTime = analysisDateAndTime
         self.deprecated1 = Deprecated1()
         self.deprecated2 = Deprecated2()

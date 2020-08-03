@@ -72,7 +72,7 @@ class ProviderContact(generics.TelephoneNumberOrEmail):
     pass
 
 
-class OrderEffectiveTime(Hl7Field):
+class OrderEffectiveTime(generics.DateAndTime):
     pass
 
 
@@ -147,6 +147,7 @@ class OrderHeaderLine(generics.Hl7Line):
                  orderingFacilityName:OrderingFacilityName,
                  orderingFacilityAddress:OrderingFacilityAddress,
                  orderingFacilityPhone:OrderingFacilityPhone,
+                 orderEffectiveTime:OrderEffectiveTime,
                  providerAddress:ProviderAddress=""):
         self.orderControl = OrderControl()
         self.orderPlacerNumber = OrderPlacerNumber()
@@ -162,7 +163,7 @@ class OrderHeaderLine(generics.Hl7Line):
         self.orderingProvider = orderingProvider
         self.entererLocation = EntererLocation()
         self.providerContact = providerContact
-        self.orderEffectiveTime = OrderEffectiveTime()
+        self.orderEffectiveTime = orderEffectiveTime
         self.orderControlCodeReason = OrderControlCodeReason()
         self.enteringOrganization = EnteringOrganization()
         self.enteringDevice = EnteringDevice()

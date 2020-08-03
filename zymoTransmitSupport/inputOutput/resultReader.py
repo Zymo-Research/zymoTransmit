@@ -55,13 +55,33 @@ class TestResult(object):
          self.note,
          self.race,
          self.ethnicity,
-         self.accession
+         self.accession,
+         testOrderedDate,
+         testOrderedTime,
+         self.equipmentCode,
+         self.equipmentDescription,
+         self.equipmentID
          ) = self.elementArray
+        if not (self.patientID or self.specimenID or self.accession):
+            raise ValueError("All samples must have at least one of the following IDs: accession, specimen, or patient")
+        if not self.accession:
+            if self.patientID and self.specimenID:
+                divider = ":"
+            else:
+                divider = ""
+            self.accession = "%s%s%s" %(self.patientID, divider, self.specimenID)
+        if not self.specimenID:
+            self.specimenID = self.accession
+        if not self.patientID:
+            self.patientID = self.accession
+        if self.equipmentDescription and not self.equipmentID:
+            raise ValueError("If test equipment description is present, test equipment code must also be present.")
         self.patientDateOfBirth = self.processDateAndTime(patientDateOfBirth, "")
         self.collectionDateTime = self.processDateAndTime(collectionDate, collectionTime)
         self.receivedDateTime = self.processDateAndTime(receivedDate, receivedTime)
         self.analysisDateTime = self.processDateAndTime(analysisDate, analysisTime)
         self.reportedDateTime = self.processDateAndTime(reportedDate, reportedTime)
+        self.testOrderedDateTime = self.processDateAndTime(testOrderedDate, testOrderedTime)
         self.auxiliaryData = {}
 
     def processRawLine(self, delimiter):
