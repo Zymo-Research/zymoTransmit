@@ -119,31 +119,39 @@ class ResponsibleObserver(Hl7Field):
 class ObservationMethod(Hl7Field):
     # At some point, this should become an encoded value field, but the coding system seems hard to access
     def __init__(self, code:str, description:str):
-        self.code = code
-        self.description = description
-        self.subfields = [
-            "",
-            "",
-            "",
-            self.code[:20],
-            self.description[:199],
-            "L",
-            "",
-            "v unknown"
-        ]
+        if not (code or description):
+            self.subfields = []
+        elif not (code and description):
+            raise ValueError("Both observation method code and description must be provided if one is provided.\nCode: %s\nDescription: %s" %(code, description))
+        else:
+            self.code = code
+            self.description = description
+            self.subfields = [
+                "",
+                "",
+                "",
+                self.code[:20],
+                self.description[:199],
+                "L",
+                "",
+                "v unknown"
+            ]
 
 
 
 class EquipmentInstanceIdentifier(Hl7Field):
 
     def __init__(self, instanceIdentifier:str):
-        self.instanceIdentifier = instanceIdentifier
-        self.subfields = [
-            self.instanceIdentifier[:199],
-            "manufacturer",
-            "NA",
-            "ISO"
-        ]
+        if not instanceIdentifier:
+            self.subfields = []
+        else:
+            self.instanceIdentifier = instanceIdentifier
+            self.subfields = [
+                self.instanceIdentifier[:199],
+                "manufacturer",
+                "NA",
+                "ISO"
+            ]
 
 
 class AnalysisDateAndTime(generics.DateAndTime):
