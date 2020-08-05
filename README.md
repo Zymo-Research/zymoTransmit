@@ -1,15 +1,22 @@
 # Zymo Research Transmit: Simple Public Health Data Transmission
+##### A collaboration between UCLA and Zymo Research
 
-We are honored to be playing an important role in the response to COVID-19.  To assist with that, we have chosen to make this program available as free, open-source software for all to use with our support.  Please contact us if you require assistance with this software or other portions of your pipeline ranging from sample collection and preservation to viral RNA extraction, detection, or analysis.  We have experts in high-throughput laboratory automation ready to help you scale-up as well.
+---
+
+We are honored to be playing an important role in the response to COVID-19.  To assist with that, we have chosen to make this program available as free, open-source academic/industry collaborative software for all to use with our support.  The release of this software has been supported by the UCLA Molecular, Cell, and Developmental Biology Department as well as the Quantitative and Computational Biosciences Institute (the Collaboratory in particular) in collaboration with Zymo Research.
 
      Be quick, but don't hurry.
                                  – John Wooden
+                                 
+At UCLA, our core mission can be summarized into **Education, Research, and Service**. 
 
-At Zymo Research, our vision is, "*To have a positive impact in the biomedical field and to contribute to the greater good of humanity*," and it is with this vision guiding our efforts that we offer you this software package.
+At Zymo Research, our vision is, "*To have a positive impact in the biomedical field and to contribute to the greater good of humanity*". 
+
+It is with these principles guiding our efforts that we offer this software package free to use to facilitate California's epidemiology efforts during this challenging time.
 
 
 #### Publication
-At present, there is not publication planned for this software.  If anybody in the public health/epidemiology field wishes to collaborate on one, please contact us.  We love to publish.
+At present, there is not publication planned for this software.  If anybody in the public health/epidemiology field wishes to collaborate on one (especially the Fielding School of Public Health), please contact us.
 
 ## Quick Start Guide
 This Program was written in Python 3.6.4.  It should work with other version of 3.6 and most likely later versions as well.
@@ -158,7 +165,7 @@ An additional file called rejects.csv will be created at the start of each run i
 
 ## Contributing
 
-We welcome and encourage contributions to this project from the microbiomics community and will happily accept and acknowledge input (and possibly provide some free kits as a thank you).  We aim to provide a positive and inclusive environment for contributors that is free of any harassment or excessively harsh criticism. Our Golden Rule: *Treat others as you would like to be treated*.
+We welcome and encourage contributions to this project from the microbiomics community and will happily accept and acknowledge input (and possibly provide some free kits as a thank you).  We aim to provide a safe, positive, and inclusive environment for contributors that is free of any harassment or excessively harsh criticism. Our Golden Rule: *Treat others as you would like to be treated*.
 
 ## Versioning
 
@@ -166,7 +173,7 @@ We use a modification of [Semantic Versioning](https://semvar.org) to identify o
 
 Release identifiers will be *major.minor.patch*
 
-Major release: Newly required parameter or other change that is not entirely backwards compatible
+Major release: Newly required parameter or other change that is not entirely backwards compatible with report formats
 Minor release: New optional parameter
 Patch release: No changes to parameters
 
@@ -179,7 +186,8 @@ This major release has been nicknamed Imahara's Pudding Cup after [Grant Imahara
 ## Authors
 
 - **Michael M. Weinstein** - *Project Lead, Programming and Design* - [michael-weinstein](https://github.com/michael-weinstein)
- - For support, please contact mweinstein -atSymbol- zymoresearch.com or call us at (949) 679-1190 
+  - Scientist at Zymo Research and Adjunct Professor of Molecular, Cell, and Developmental Biology at UCLA and Member of the QCB Collaboratory
+ - For support, please contact michael.weinstein -atSymbol- ucla.edu or call us at (949) 679-1190 
 
 See also the list of [contributors](https://github.com/Zymo-Research/zymoTransmit/contributors) who participated in this project.
 
@@ -193,6 +201,7 @@ This license restricts the usage of this application for non-open sourced system
 We would like to thank the following, without whom this would not have happened:
 * The Python Foundation
 * The staff at Zymo Research
+* The UC System
 * Pangea Laboratory
 * The California Department of Public Health
 * Our customers
