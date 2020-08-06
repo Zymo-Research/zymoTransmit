@@ -377,8 +377,8 @@ class ProviderInfo(Hl7Field):
                  nameType:str="L",
                  professionalSuffix:str="",
                  idNumber:str="",
-                 assigningAuthority:[str, AssigningAuthority]="",):
-        self.idNumber = ""
+                 assigningAuthority:[str, AssigningAuthority]=""):
+        self.idNumber = idNumber
         self.family = family
         self.given = given
         self.middle = middle
@@ -386,11 +386,17 @@ class ProviderInfo(Hl7Field):
         self.prefix = prefix
         self.degree = ""
         self.sourceTable = ""
-        self.assigningAuthority = ""
+        if not self.idNumber:
+            self.assigningAuthority = ""
+        else:
+            self.assigningAuthority = assigningAuthority
         self.nameType = nameType
         self.identifierCheckDigit = ""
         self.checkDigitScheme = ""
-        self.identifierTypeCode = ""
+        if self.idNumber and hasattr(assigningAuthority, "name"):
+            self.identifierTypeCode = "NPI"
+        else:
+            self.identifierTypeCode = ""
         self.assigningFacility = ""
         self.nameRepCode = ""
         self.nameContext = ""
