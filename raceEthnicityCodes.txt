@@ -4,8 +4,8 @@
 2076-8	native hawaiian or other pacific islander	native hawaiian	pacific islander	hawaiian
 2131-1	other			
 2106-3	white	caucasian		
-2135-2	hispanic or latino	latino	hispanic	
-2186-5	not hispanic or latino			
+2135-2	hispanic or latino	latino	hispanic	h
+2186-5	not hispanic or latino	n		
 PHC1369	not obtainable			
 PHC1367	refused			
 ASKU	asked but unknown			

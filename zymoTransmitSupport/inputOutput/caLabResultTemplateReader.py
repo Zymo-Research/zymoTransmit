@@ -1,11 +1,8 @@
-import os
-import datetime
-import re
 import collections
 from . import resultReader
 
-class CATestResult(object):
-    expectedElements = 40
+class CALabTestResult(object):
+    expectedElements = 43
 
     def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
         self.rawLine = rawLine
@@ -13,57 +10,51 @@ class CATestResult(object):
             self.elementArray = self.processRawLine(delimiter)
         elif isinstance(rawLine, collections.Iterable):
             self.elementArray = self.processList(self.rawLine)
-        (self.sendingApplication,
-         self.facilityName,
-         self.facilityCLIA,
-         self.facilityStreet,
-         self.facilityCity,
-         self.facilityState,
-         self.facilityZip,
-         self.facilityPhone,
-         self.patientID,
-         self.patientFirstName,
-         self.patientLastName,
-         patientDateOfBirth,
-         self.patientSex,
-         self.race,
-         self.ethnicity,
-         self.language,
-         self.patientStreetAddress,
-         self.patientCity,
-         self.patientState,
-         self.patientZip,
-         self.patientCounty,
-         self.patientPhone,
-         self.okToContact,
-         self.providerFirstName,
-         self.providerLastName,
-         self.providerNPI,
-         self.providerStreet,
-         self.providerZip,
-         self.providerPhone,
-         self.specimenID,
-         collectionDate,
-         testOrderDate,
-         analyzedDate,
-         reportedDate,
-         self.specimenType,
-         self.specimenSite,
-         self.testName,
-         self.resultString,
-         self.accession,
-         self.testCode,
-         self.resultCode,
-         self.deviceIdentifier
+        (
+             self.facilityName,
+             self.facilityCLIA,
+             self.facilityStreet,
+             self.facilityCity,
+             self.facilityState,
+             self.facilityZip,
+             self.facilityPhone,
+             self.patientID,
+             self.patientFirstName,
+             self.patientMiddleName,
+             self.patientLastName,
+             self.patientDateOfBirth,
+             self.patientSex,
+             self.race,
+             self.ethnicity,
+             self.language,
+             self.patientStreetAddress,
+             self.patientCity,
+             self.patientState,
+             self.patientZip,
+             self.patientCounty,
+             self.patientPhone,
+             self.okToContact,
+             self.providerFirstName,
+             self.providerLastName,
+             self.providerNPI,
+             self.providerStreet,
+             self.providerZip,
+             self.providerPhone,
+             self.specimenID,
+             self.collectionDate,
+             self.testOrderedDate,
+             self.analysisDate,
+             self.reportedDate,
+             self.specimenSNOMED,
+             self.specimenSite,
+             self.testName,
+             self.resultString,
+             self.accession,
+             self.testLOINC,
+             self.resultCode,
+             self.deviceIdentifier,
+             self.note
          ) = self.elementArray
-        self.patientDateOfBirth = self.processDateAndTime(patientDateOfBirth, "")
-        self.collectionDateTime = self.processDateAndTime(collectionDate, "")
-        self.reportedDateTime = self.processDateAndTime(reportedDateAndTime, "")
-        self.patientDateOfBirth, patientTimeOfBirth = self.revertDateTimeObject(self.patientDateOfBirth)
-        self.collectionDate, self.collectionTime = self.revertDateTimeObject(self.collectionDateTime)
-        self.reportedDate, self.reportedTime = self.revertDateTimeObject(self.reportedDateTime)
-        self.testLOINC = self.findTestLoinc()
-        self.specimenSNOMED = self.determineSampleType()
 
 
     def processRawLine(self, delimiter):
@@ -96,3 +87,65 @@ class CATestResult(object):
             errorMessageLines.append("Elements: %s" % processedList)
             raise ValueError("\n".join(errorMessageLines))
         return processedList
+
+    def convertToStandardResultObject(self):
+        resultArray = [
+             self.patientID,
+             self.patientLastName,
+             self.patientFirstName,
+             self.patientMiddleName,
+             self.patientDateOfBirth,
+             self.patientSex,
+             self.patientStreetAddress,
+             self.patientCity,
+             self.patientState,
+             self.patientZip,
+             self.patientPhone,
+             self.providerLastName,
+             self.providerFirstName,
+             "",
+             self.providerStreet,
+             "",
+             "",
+             self.providerZip,
+             self.providerPhone,
+             self.specimenID,
+             self.collectionDate,
+             "",
+             "",
+             "",
+             self.specimenSNOMED,
+             self.testLOINC,
+             self.analysisDate,
+             "",
+             self.resultString,
+             self.reportedDate,
+             "",
+             self.note,
+             self.race,
+             self.ethnicity,
+             self.accession,
+             self.testOrderedDate,
+             "",
+             "",
+             self.deviceIdentifier,
+             "",
+            self.providerNPI
+        ]
+        resultObject = resultReader.TestResult(resultArray)
+        auxiliaryData = {
+            "labName": self.facilityName,
+            "labCLIA": self.facilityCLIA,
+            "labStreet": self.facilityStreet,
+            "labCity": self.facilityCity,
+            "labState": self.facilityState,
+            "labZip": self.facilityZip,
+            "labPhone": self.facilityPhone,
+            "okToContact": self.okToContact
+        }
+        resultObject.auxiliaryData = auxiliaryData.copy()
+        resultObject.rawLine = self.rawLine
+        return resultObject
+
+    def __str__(self):
+        return ", ".join([str(item) for item in self.elementArray])

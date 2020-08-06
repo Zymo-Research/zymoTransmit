@@ -6,10 +6,11 @@ import collections
 import csv
 import typing
 from . import caResultReader
+from . import caLabResultTemplateReader
 
 
 class TestResult(object):
-    expectedElements = 40
+    expectedElements = 41
 
     def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
         self.okToTransmit = True
@@ -60,7 +61,8 @@ class TestResult(object):
          testOrderedTime,
          self.equipmentCode,
          self.equipmentDescription,
-         self.equipmentID
+         self.equipmentID,
+         self.providerNPI
          ) = self.elementArray
         if not (self.specimenID or self.accession):
             raise ValueError("All samples must have either specimen ID or accession number")
@@ -71,7 +73,7 @@ class TestResult(object):
         if not self.patientID:
             self.patientID = self.accession
         if self.equipmentDescription and not self.equipmentID:
-            raise ValueError("If test equipment description is present, test equipment code must also be present.")
+            self.equipmentID = "None"
         self.patientDateOfBirth = self.processDateAndTime(patientDateOfBirth, "")
         self.collectionDateTime = self.processDateAndTime(collectionDate, collectionTime)
         self.receivedDateTime = self.processDateAndTime(receivedDate, receivedTime)
@@ -319,7 +321,7 @@ def loadTextDataTable(filePath: str):
     return cleanedResults
 
 
-def loadCSVDataTable(filePath: str, cdphCSV:bool=False):
+def loadCSVDataTable(filePath: str, cdphCSV:bool=False, caLabForm:bool=False):
     testResults = []
     if not os.path.isfile(filePath):
         raise FileNotFoundError("Unable to find input file at %s" % filePath)
@@ -335,7 +337,7 @@ def loadCSVDataTable(filePath: str, cdphCSV:bool=False):
         utf8 = False
     csvHandle = csv.reader(resultsFile)
     currentLine = 0
-    if cdphCSV:
+    if cdphCSV or caLabForm:
         header = next(csvHandle)
         currentLine += 1
     line = next(csvHandle)
@@ -351,6 +353,9 @@ def loadCSVDataTable(filePath: str, cdphCSV:bool=False):
         if cdphCSV:
             caTestResult = caResultReader.CATestResult(line)
             testResultObject = caTestResult.convertToStandardResultObject()
+        elif caLabForm:
+            caLabTestResult = caLabResultTemplateReader.CALabTestResult(line)
+            testResultObject = caLabTestResult.convertToStandardResultObject()
         else:
             testResultObject = TestResult(line)
         testResults.append((currentLine, testResultObject))
@@ -384,8 +389,8 @@ def validateResultTable(rawResultTable: typing.List[typing.Tuple[int, TestResult
     return cleanedResults
 
 
-def loadRawDataTable(filePath: str, cdphCSV:bool=False):
+def loadRawDataTable(filePath: str, cdphCSV:bool=False, caLabForm:bool=False):
     if filePath.lower().endswith(".csv"):
-        return loadCSVDataTable(filePath, cdphCSV)
+        return loadCSVDataTable(filePath, cdphCSV, caLabForm)
     else:
         return loadTextDataTable(filePath)

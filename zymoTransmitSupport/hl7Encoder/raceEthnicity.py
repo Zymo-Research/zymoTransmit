@@ -37,9 +37,9 @@ def makeRaceEthnicityTable(data:list):
     raceEthnicityTable = {}
     for line in data:
         code = line[0]
-        aliasList = line[1:]
+        aliasList = line.copy()
         aliasList = [alias.upper() for alias in aliasList]
-        preferredName = aliasList[0]
+        preferredName = aliasList[1]
         raceEthnicityTable[code] = RaceEthnicity(code, preferredName, aliasList)
     return raceEthnicityTable
 

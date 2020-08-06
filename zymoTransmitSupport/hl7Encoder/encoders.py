@@ -87,7 +87,9 @@ def makeORCLine(result:inputOutput.resultReader.TestResult):
     orderingProvider = orderHeader.OrderingProvider(
         result.providerLastName,
         result.providerFirstName,
-        result.providerMiddleName
+        result.providerMiddleName,
+        idNumber=result.providerNPI,
+        assigningAuthority=generics.AssigningAuthority("NPI")
     )
     providerContact = orderHeader.ProviderContact(result.providerPhone)
     orderingFacilityAssigningAuthority = orderHeader.OrderingFacilityAssigningAuthority(
