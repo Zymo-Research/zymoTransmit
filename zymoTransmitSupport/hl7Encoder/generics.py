@@ -257,7 +257,7 @@ class Address(Hl7Field):
         self.otherDesignation = ""
         self.city = city
         self.state = state
-        self.zip = zip
+        self.zip = correctLostLeadingZeroZipcode(zip, state)
         self.country = country
         if not addressType is None:
             self.addressType = addressType
@@ -277,6 +277,30 @@ class Address(Hl7Field):
             self.countyCode[:20]
         ]
 
+
+def correctLostLeadingZeroZipcode(zip:str, expectedState:str):
+    if not zip:
+        return zip
+    if not expectedState:
+        return zip
+    try:
+        zipData = zipcodes.matching(zip)
+    except ValueError:
+        return zip
+    if zipData:
+        return zip
+    if len(zip) < 5:
+        proposedZip = zip.zfill(5)
+        try:
+            proposedZipInfo = zipcodes.matching(proposedZip)
+        except ValueError:
+            return zip
+        proposedState = proposedZipInfo[0]["state"]
+        if proposedState.upper().strip() == expectedState.upper().strip():
+            return proposedZip
+        else:
+            return zip
+    return zip
 
 
 def zip2FIPS(zip:str):
