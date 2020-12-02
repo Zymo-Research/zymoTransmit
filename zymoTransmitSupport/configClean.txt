@@ -12,6 +12,7 @@ Lab Name:
 Lab Phone:
 Lab Email:
 Lab Street:
+Lab Suite:
 Lab City:
 Lab State:
 Lab Zip:

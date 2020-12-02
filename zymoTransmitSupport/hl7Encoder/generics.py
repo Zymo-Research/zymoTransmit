@@ -252,9 +252,9 @@ class Address(Hl7Field):
 
     defaultAddressType = "H"
 
-    def __init__(self, streetAddress:str, city:str, state:str, zip:str, country:str="USA", addressType:str=None):
+    def __init__(self, streetAddress:str, city:str, state:str, zip:str, country:str="USA", addressType:str=None, otherDesignation:str=""):
         self.streetAddress = streetAddress
-        self.otherDesignation = ""
+        self.otherDesignation = otherDesignation
         self.city = city
         self.state = state
         self.zip = correctLostLeadingZeroZipcode(zip, state)
