@@ -125,7 +125,8 @@ def makeORCLine(result:inputOutput.resultReader.TestResult):
             config.LabInfo.street,
             config.LabInfo.city,
             config.LabInfo.state,
-            config.LabInfo.zip
+            config.LabInfo.zip,
+            otherDesignation=config.LabInfo.suite
         )
     if "labPhone" in result.auxiliaryData:
         orderingFacilityPhone = orderHeader.OrderingFacilityPhone(result.auxiliaryData["labPhone"])
@@ -303,7 +304,8 @@ def makeOBXLine(result:inputOutput.resultReader.TestResult):
             config.LabInfo.street,
             config.LabInfo.city,
             config.LabInfo.state,
-            config.LabInfo.zip
+            config.LabInfo.zip,
+            otherDesignation=config.LabInfo.suite
         )
     if config.LabDirectorInfo.assigningAuthority:
         medicalDirectorAssignmentAuthority = observedResults.MedicalDirectorNumberAssignmentAuthority(

@@ -56,6 +56,7 @@ class LabInfo:
     phone = configDict.setdefault("lab phone", "")
     email = configDict.setdefault("lab email", "")
     street = configDict.setdefault("lab street", "")
+    suite = configDict.setdefault("lab suite", "")
     city = configDict.setdefault("lab city", "")
     state = configDict.setdefault("lab state", "")
     zip = configDict.setdefault("lab zip", "")
