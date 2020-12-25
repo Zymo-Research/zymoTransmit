@@ -26,11 +26,23 @@ def getSOAPClient(wsdlURL:str, clientCertificatePath:str=None, dumpClientInfo:bo
     if strongSSLCipherSuiteEnforcement:
         session.mount("https://", adapter=TLSEnforcer())
     if clientCertificatePath:
-        if not os.path.isfile(clientCertificatePath):
-            raise FileNotFoundError("Unable to find client certificate path at %s" %clientCertificatePath)
+        if type(clientCertificatePath) == str:
+            if not os.path.isfile(clientCertificatePath):
+                raise FileNotFoundError("Unable to find client certificate path at %s" %clientCertificatePath)
+        else:
+            if type(clientCertificatePath) in [tuple, list]:
+                if not len(clientCertificatePath) == 2:
+                    raise ValueError("List/tuple certificate paths should have exactly two elements with the first being the certificate and second being key.")
+                certPath, keyPath = clientCertificatePath
+                if not os.path.isfile(certPath) or not os.path.isfile(keyPath):
+                    raise FileNotFoundError("Unable to find client certificate and/or key path.\nCert: %s\nKey: %s" %(certPath, keyPath))
         session.cert = clientCertificatePath
     transport = zeep.transports.Transport(session=session, timeout=30)
-    client = zeep.Client(wsdlURL, transport=transport)
+    try:
+        client = zeep.Client(wsdlURL, transport=transport)
+    except OSError:
+        wsdlURL = wsdlURL.replace("file:///", "file://")  # Seems like a weird quirk on windows where it wants to add a root / to the URI.  Might be a bug somewhere I need to report.
+        client = zeep.Client(wsdlURL, transport=transport)
     #testUpload = client.service.connectivityTest("ping")
     if testOnly or dumpClientInfo:
         print("Server returned:")
