@@ -41,7 +41,7 @@ def getSOAPClient(wsdlURL:str, clientCertificatePath:str=None, dumpClientInfo:bo
     try:
         client = zeep.Client(wsdlURL, transport=transport)
     except OSError:
-        wsdlURL = wsdlURL.replace("file:///", "file://")  # Seems like a weird quirk on windows where it wants to add a root / to the URI.  Might be a bug somewhere I need to report.
+        wsdlURL = wsdlURL.replace("file:///", "file://")  # Seems like a weird quirk on windows where it wants to add a root / to the URI.  Might be a bug somewhere I need to report.  Actually, fixed in the latest zeep major release.
         client = zeep.Client(wsdlURL, transport=transport)
     #testUpload = client.service.connectivityTest("ping")
     if testOnly or dumpClientInfo:
