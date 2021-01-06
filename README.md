@@ -19,7 +19,7 @@ It is with these principles guiding our efforts that we offer this software pack
 At present, there is not publication planned for this software.  If anybody in the public health/epidemiology field wishes to collaborate on one (especially the Fielding School of Public Health), please contact us.
 
 ## Quick Start Guide
-This Program was written in Python 3.6.4.  It should work with other version of 3.6 and most likely later versions as well.
+This Program was written in Python 3.8.  It has also been tested with version 3.6 and most likely will work with other versions as well.
 Earlier versions may have some difficulties. Please report any compatibility problems you may have and I will see about addressing them if you really must run on a different version of Python.
 
 If you do not already have the Python language installed on your computer, you can download the web-based installer from this page on [python.org](https://www.python.org/downloads/release/python-364/) or directly from [here](https://www.python.org/ftp/python/3.6.4/python-3.6.4-amd64-webinstall.exe) on a Windows computer.  **During Python installation, be sure to enable Python in your PATH variables, as that will make this program much easier to run in the future.  Also be sure to approve installation of Tcl/Tk and PIP, as those will also contribute to making this easier to run in the future.**
@@ -81,6 +81,12 @@ If you need to edit this file in the future, it can be found at ```zymoTransmit/
 ```
 python zymoTransmit.py
 ```
+**If NOT using a PFX certificate (you have CER and KEY files available)**
+
+You should have files called impl-cie-ws (for testing) and odxi-ws (for production) with endings of .cer and .key for each.  Simply copy these credential files into the certificates folder in your Zymo Research Transmit directory.  No further attention to these files should be required.
+
+**If using a PFX certificate for the legacy CDPH gateway**
+
 Convert your certificate for use (if you do not supply a file name, a file browser window will appear if GUI functionality is available)
 ```
 python zymoTransmit.py -c [fileName.pfx]
@@ -179,9 +185,9 @@ Patch release: No changes to parameters
 
 ## Current Version
 
-The current major release contains all initial functionality plus some additional features designed to help the California Department of Public Health clear backlogged data using their existing form.  Many of these extended features will also help other users with their submissions.  Essential features covered include transmission of data from this program's preferred table format (either CSV or tab-delimited text), transmission of a large block of HL7 data, transmission of a folder with individual HL7 data blocks, transmission of a CDPH-formatted CSV file, and handling of results that fail to transmit for various reasons.
+The current version contains all functionality from the previous version with the new key feature being the ability to connect to the new Optum API for reporting results in California.
 
-This major release has been nicknamed Imahara's Pudding Cup after [Grant Imahara](https://en.wikipedia.org/wiki/Grant_Imahara), a popular advocate of STEAM education and performing random acts of kindness for others.
+This major release has been nicknamed Geoff Peterson's Metal Mohawk in remembrance of [Grant Imahara](https://en.wikipedia.org/wiki/Grant_Imahara), a popular advocate of STEAM education and performing random acts of kindness for others.
 
 ## Authors
 
@@ -202,6 +208,7 @@ We would like to thank the following, without whom this would not have happened:
 * The Python Foundation
 * The staff at Zymo Research
 * The UC System
+  - Special thanks to UCLA's departments of Molecular, Cell, and Developmental Biology as well as Computational Medicine
 * Pangea Laboratory
 * The California Department of Public Health
 * Our customers
