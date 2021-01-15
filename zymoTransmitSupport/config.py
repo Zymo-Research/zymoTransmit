@@ -97,6 +97,14 @@ class Connection:
     certificateFileName = configDict.setdefault("certificate file name", "")
     userName = configDict.setdefault("gateway user", "")
     password = configDict.setdefault("gateway password", "")
+    usingOptum = configDict.setdefault("using optum", False)
+    localWSDLFolder = configDict.setdefault("local wsdl folder", "")
+    optumTestingWSDL = configDict.setdefault("optum testing wsdl file", "")
+    optumProductionWSDL = configDict.setdefault("optum production wsdl file", "")
+    optumTestingCertificate = configDict.setdefault("optum testing certificate", "")
+    optumTestingKey = configDict.setdefault("optum testing key", "")
+    optumProductionCertificate = configDict.setdefault("optum production certificate", "")
+    optumProductionKey = configDict.setdefault("optum production key", "")
 
 
 class Configuration:

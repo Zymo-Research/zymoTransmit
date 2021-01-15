@@ -1,4 +1,5 @@
 pyOpenSSL==19.1.0
 zipcodes==1.1.0
-zeep==3.4.0
+zeep==4.0.0
 pytk==0.0.2.0
+pathlib==1.0.1

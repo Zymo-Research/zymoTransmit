@@ -3,6 +3,7 @@ try:
     import sys
     import traceback
     import csv
+    import pathlib
 
     contentRoot = os.path.split(os.path.abspath(__file__))[0]
 
@@ -198,6 +199,35 @@ def processRejects(resultList:typing.List[zymoTransmitSupport.inputOutput.result
     file.close()
 
 
+def selectCertificatePath():
+    if config.Connection.usingOptum:
+        if config.Configuration.productionReady:
+            certFile = config.Connection.optumProductionCertificate
+            keyFile = config.Connection.optumProductionKey
+        else:
+            certFile = config.Connection.optumTestingCertificate
+            keyFile = config.Connection.optumTestingKey
+        certPath = os.path.join(contentRoot, config.Connection.certificateFolder, certFile)
+        keyPath = os.path.join(contentRoot, config.Connection.certificateFolder, keyFile)
+        certificateFilePath = (certPath, keyPath)
+    else:
+        certificateFilePath = os.path.join(contentRoot, config.Connection.certificateFolder, config.Connection.certificateFileName)
+    return certificateFilePath
+
+
+def selectURLForWSDL():
+    if config.Connection.usingOptum:
+        if config.Configuration.productionReady:
+            relativePath = os.path.join(config.Connection.localWSDLFolder, config.Connection.optumProductionWSDL)
+        else:
+            relativePath = os.path.join(config.Connection.localWSDLFolder, config.Connection.optumTestingWSDL)
+        absolutePath = os.path.abspath(relativePath)
+        wsdlURL = pathlib.Path(absolutePath).as_uri()
+    else:
+        wsdlURL = config.Connection.wsdlURL
+    return wsdlURL
+
+
 def prepareAndSendResults(args:CheckArgs):
     if not args.hl7Directory:
         if os.path.abspath(args.input) == os.path.join(contentRoot, "config.txt"):
@@ -216,9 +246,10 @@ def prepareAndSendResults(args:CheckArgs):
             quit()
     skippedData = []
     resultList = []
-    certificateFilePath = os.path.join(contentRoot, config.Connection.certificateFolder, config.Connection.certificateFileName)
+    certificateFilePath = selectCertificatePath()
+    wsdlURL = selectURLForWSDL()
     client, session = zymoTransmitSupport.inputOutput.connection.getSOAPClient(
-        config.Connection.wsdlURL, certificateFilePath, dumpClientInfo=False)
+        wsdlURL, certificateFilePath, dumpClientInfo=False, testOnly=False)
     if args.hl7Directory:
         if not os.path.isdir(args.input):
             raise NotADirectoryError("%s was given as a directory for raw HL7 block files, but it is not a directory.")

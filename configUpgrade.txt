@@ -1,0 +1,11 @@
+## Copy the text below into your config file if you are upgrading from version 1.x of this program.
+## The location is not important, but adding it to the end of the connection section would be ideal location
+
+Using Optum: FALSE
+Local WSDL Folder: wsdl
+Optum Testing WSDL File: ca_impl_wsdl.xml
+Optum Production WSDL File: ca_prod_wsdl.xml
+Optum Testing Certificate: impl-cie-ws.cer
+Optum Testing Key: impl-cie-ws.key
+Optum Production Certificate: odxi-ws.cer
+Optum Production Key: odxi-ws.key
