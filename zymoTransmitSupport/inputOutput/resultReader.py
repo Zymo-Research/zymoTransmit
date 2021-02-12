@@ -5,6 +5,7 @@ import zipcodes
 import collections
 import csv
 import typing
+from . import caResultReaderOld
 from . import caResultReader
 from . import caLabResultTemplateReader
 
@@ -321,7 +322,7 @@ def loadTextDataTable(filePath: str):
     return cleanedResults
 
 
-def loadCSVDataTable(filePath: str, cdphCSV:bool=False, caLabForm:bool=False):
+def loadCSVDataTable(filePath: str, cdphCSV:bool=False, cdphOld:bool=False, caLabForm:bool=False):
     testResults = []
     if not os.path.isfile(filePath):
         raise FileNotFoundError("Unable to find input file at %s" % filePath)
@@ -337,7 +338,7 @@ def loadCSVDataTable(filePath: str, cdphCSV:bool=False, caLabForm:bool=False):
         utf8 = False
     csvHandle = csv.reader(resultsFile)
     currentLine = 0
-    if cdphCSV or caLabForm:
+    if cdphCSV or cdphOld or caLabForm:
         header = next(csvHandle)
         currentLine += 1
     line = next(csvHandle)
@@ -352,6 +353,9 @@ def loadCSVDataTable(filePath: str, cdphCSV:bool=False, caLabForm:bool=False):
             continue
         if cdphCSV:
             caTestResult = caResultReader.CATestResult(line)
+            testResultObject = caTestResult.convertToStandardResultObject()
+        elif cdphOld:
+            caTestResult = caResultReaderOld.CATestResult(line)
             testResultObject = caTestResult.convertToStandardResultObject()
         elif caLabForm:
             caLabTestResult = caLabResultTemplateReader.CALabTestResult(line)
@@ -389,8 +393,8 @@ def validateResultTable(rawResultTable: typing.List[typing.Tuple[int, TestResult
     return cleanedResults
 
 
-def loadRawDataTable(filePath: str, cdphCSV:bool=False, caLabForm:bool=False):
+def loadRawDataTable(filePath: str, cdphCSV:bool=False, cdphOld:bool=False, caLabForm:bool=False):
     if filePath.lower().endswith(".csv"):
-        return loadCSVDataTable(filePath, cdphCSV, caLabForm)
+        return loadCSVDataTable(filePath, cdphCSV, cdphOld, caLabForm)
     else:
         return loadTextDataTable(filePath)
