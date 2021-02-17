@@ -23,3 +23,6 @@
 472901003	Swab from nasal sinus (specimen)	Swab from nasal sinus
 697989009	Anterior nares swab (specimen)	Anterior nares swab
 788707000	Plasma specimen or serum specimen or whole blood specimen (specimen)	Plasma specimen or serum specimen or whole blood specimen
+433801000124107	Nasopharyngeal and oropharyngeal swab (specimen)	Nasopharyngeal and oropharyngeal swab
+119342007	Saliva	Saliva specimen
+430304001	Specimen from unspecified body site	Specimen from unspecified body site

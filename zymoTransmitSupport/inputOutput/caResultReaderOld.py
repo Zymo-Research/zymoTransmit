@@ -38,7 +38,7 @@ snomedList = getSnomedList()
 
 
 class CATestResult(object):
-    expectedElements = 47
+    expectedElements = 40
 
     def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
         self.rawLine = rawLine
@@ -46,16 +46,17 @@ class CATestResult(object):
             self.elementArray = self.processRawLine(delimiter)
         elif isinstance(rawLine, collections.Iterable):
             self.elementArray = self.processList(self.rawLine)
-        (self.facilityName,
+        (self.sendingApplication,
+         self.facilityName,
          self.facilityCLIA,
          self.facilityStreet,
          self.facilityCity,
          self.facilityState,
          self.facilityZip,
          self.facilityPhone,
+         reportedDateAndTime,
          self.patientID,
          self.patientFirstName,
-         self.patientMiddleName,
          self.patientLastName,
          patientDateOfBirth,
          self.patientSex,
@@ -69,40 +70,28 @@ class CATestResult(object):
          self.patientCountry,
          self.patientPhone,
          self.okToContact,
+         self.insurance,
+         self.expedited,
          self.providerFirstName,
          self.providerLastName,
-         self.providerFacilityName,
-         self.providerNPI,
-         self.providerStreet,
-         self.providerCity,
-         self.providerState,
-         self.providerZip,
          self.providerPhone,
          self.specimenID,
          collectionDate,
-         receivedDate,
-         orderedDate,
-         analysisDate,
-         reportedDateAndTime,
          self.specimenType,
          self.specimenSite,
          self.testName,
          self.resultString,
+         self.note,
          self.accession,
          self.testCode,
          self.resultCode,
-         self.deviceIdentifider,
-         self.note
+         self.unused
          ) = self.elementArray
         self.patientDateOfBirth = self.processDateAndTime(patientDateOfBirth, "")
         self.collectionDateTime = self.processDateAndTime(collectionDate, "")
-        self.receivedDateTime = self.processDateAndTime(receivedDate, "")
-        self.analysisDateTime = self.processDateAndTime(analysisDate, "")
         self.reportedDateTime = self.processDateAndTime(reportedDateAndTime, "")
         self.patientDateOfBirth, patientTimeOfBirth = self.revertDateTimeObject(self.patientDateOfBirth)
         self.collectionDate, self.collectionTime = self.revertDateTimeObject(self.collectionDateTime)
-        self.receivedDate, self.receivedTime = self.revertDateTimeObject(self.receivedDateTime)
-        self.analysisDate, self.analysisTime = self.revertDateTimeObject(self.analysisDateTime)
         self.reportedDate, self.reportedTime = self.revertDateTimeObject(self.reportedDateTime)
         self.testLOINC = self.findTestLoinc()
         self.specimenSNOMED = self.determineSampleType()
@@ -119,7 +108,7 @@ class CATestResult(object):
         if not len(rawLine) == self.expectedElements:
             errorMessageLines = []
             errorMessageLines.append("Got a line with an unexpected number of elements")
-            errorMessageLines.append("Expecting %s elements, but only got %s." % (self.expectedElements, len(rawLine)))
+            errorMessageLines.append("Expecting %s elements, but got %s." % (self.expectedElements, len(rawLine)))
             errorMessageLines.append("Elements: %s" % rawLine)
             raise ValueError("\n".join(errorMessageLines))
         return rawLine
@@ -185,7 +174,8 @@ class CATestResult(object):
                 errorMessageLines.append("Unable to process date value")
                 errorMessageLines.append("Attempting to process '%s' as a date failed." % dateString)
                 errorMessageLines.append("Elements: %s" % self.elementArray)
-                raise ValueError("\n".join(errorMessageLines))
+                # raise ValueError("\n".join(errorMessageLines))
+                return dateString
         else:
             dateSplit = dateString.split(dateDelimiter)
             if not len(dateSplit) == 3:
@@ -194,7 +184,8 @@ class CATestResult(object):
                 errorMessageLines.append(
                     "Attempting to process '%s' as a date with delimiter '%s' failed." % (dateString, dateDelimiter))
                 errorMessageLines.append("Elements: %s" % self.elementArray)
-                raise ValueError("\n".join(errorMessageLines))
+                # raise ValueError("\n".join(errorMessageLines))
+                return dateString
             month, day, year = dateSplit
         timeDelimiter = None
         for possibleDelimiter in possibleTimeDelimiters:
@@ -212,7 +203,8 @@ class CATestResult(object):
                 errorMessageLines.append("Unable to process time value")
                 errorMessageLines.append(
                     "Attempting to process '%s' as a time with no delimiter failed." % timeString)
-                raise ValueError("\n".join(errorMessageLines))
+                #raise ValueError("\n".join(errorMessageLines))
+                return dateString
             hour = int(timeString[:2])
             minute = int(timeString[2:4])
             second = int(timeString[4:])
@@ -231,7 +223,8 @@ class CATestResult(object):
                 errorMessageLines.append(
                     "Attempting to process '%s' as a time with delimiter '%s' failed." % (timeString, timeDelimiter))
                 errorMessageLines.append("Elements: %s" % self.elementArray)
-                raise ValueError("\n".join(errorMessageLines))
+                # raise ValueError("\n".join(errorMessageLines))
+                return dateString
             hourCheck = hour in range(24)
             minuteCheck = minute in range(60)
             secondCheck = second in range(60)
@@ -242,7 +235,8 @@ class CATestResult(object):
                     "Attempting to process '%s' as a time with delimiter '%s' returned a value out of range (hour not between 0 and 23 or second not between 0 and 59)." % (
                     timeString, timeDelimiter))
                 errorMessageLines.append("Elements: %s" % self.elementArray)
-                raise ValueError("\n".join(errorMessageLines))
+                #raise ValueError("\n".join(errorMessageLines))
+                return dateString
         try:
             dateTimeObject = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tzInfo)
         except ValueError as err:
@@ -250,9 +244,11 @@ class CATestResult(object):
         return dateTimeObject
 
 
-    def revertDateTimeObject(self, revertant:[datetime.datetime, datetime.date, datetime.time]):
+    def revertDateTimeObject(self, revertant:[str, datetime.datetime, datetime.date, datetime.time]):
         if not revertant:
             return ("", "")
+        if type(revertant) == str:
+            return (revertant, "")
         if type(revertant) == datetime.datetime:
             dateString = "%s/%s/%s" %(revertant.month, revertant.day, revertant.year)
             timeString = "%s:%s:%s" %(revertant.hour, revertant.minute, revertant.second)
@@ -321,7 +317,7 @@ class CATestResult(object):
              self.patientID,
              self.patientLastName,
              self.patientFirstName,
-             self.patientMiddleName,
+             "",
              self.patientDateOfBirth,
              self.patientSex,
              self.patientStreetAddress,
@@ -332,20 +328,20 @@ class CATestResult(object):
              self.providerLastName,
              self.providerFirstName,
              "",
-             self.providerStreet,
-             self.providerCity,
-             self.providerState,
-             self.providerZip,
+             "",
+             "",
+             "",
+             "",
              self.providerPhone,
              self.specimenID,
              self.collectionDate,
              self.collectionTime,
-             self.receivedDate,
-             self.receivedTime,
+             "",
+             "",
              self.specimenSNOMED,
              self.testLOINC,
-             self.analysisDate,
-             self.analysisTime,
+             "",
+             "",
              self.resultString,
              self.reportedDate,
              self.reportedTime,
@@ -356,6 +352,7 @@ class CATestResult(object):
          ]
          resultObject = resultReader.TestResult(resultArray)
          auxiliaryData = {
+             "sendingApplication": self.sendingApplication,
              "labName": self.facilityName,
              "labCLIA": self.facilityCLIA,
              "labStreet": self.facilityStreet,
@@ -364,11 +361,12 @@ class CATestResult(object):
              "labZip": self.facilityZip,
              "labPhone": self.facilityPhone,
              "okToContact": self.okToContact,
-             "providerFacilityName": self.providerFacilityName,
-             "providerNPI": self.providerNPI,
-             "deviceIdentifider": self.deviceIdentifider
+             "insurance": self.insurance,
+             "expedited": self.expedited,
+             "unused": self.unused
          }
          resultObject.auxiliaryData = auxiliaryData.copy()
+         resultObject.rawLine = self.rawLine
          return resultObject
 
     def __str__(self):

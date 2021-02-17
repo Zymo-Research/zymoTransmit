@@ -38,7 +38,7 @@ except Exception as err:
 
 class CheckArgs(object):
 
-    __slots__ = ["input", "noTransmit", "hl7Directory", "cdph", "caLabForm", "debug"]
+    __slots__ = ["input", "noTransmit", "hl7Directory", "cdphOld", "cdph", "caLabForm", "debug"]
 
     def __init__(self):
         parser = argparse.ArgumentParser()
@@ -49,7 +49,8 @@ class CheckArgs(object):
         parser.add_argument("-e", "--editConfig", help = "Edit configuration file", action = 'store_true')
         parser.add_argument("-n", "--noTransmit", help = "Do not attempt to transmit data", action = 'store_true')
         parser.add_argument("-d", "--hl7Directory", help = "Upload a directory of HL7 files", action = 'store_true')
-        parser.add_argument("--cdph", help = "Read CDPH format with header line", action = 'store_true')
+        parser.add_argument("--cdphOld", help = "Read old CDPH format with header line", action = 'store_true')
+        parser.add_argument("--cdph", help="Read CDPH format with header line", action='store_true')
         parser.add_argument("--caLabForm", help = "Read California Lab form", action = 'store_true')
         parser.add_argument("--debug", help="Running in debugging mode", action='store_true')
         parser.add_argument("input", help = "Input file", type = str, nargs='?')
@@ -63,10 +64,11 @@ class CheckArgs(object):
         self.noTransmit = rawArgs.noTransmit
         self.hl7Directory = rawArgs.hl7Directory
         self.cdph = rawArgs.cdph
+        self.cdphOld = rawArgs.cdphOld
         self.caLabForm = rawArgs.caLabForm
         self.debug = rawArgs.debug
-        if self.caLabForm and self.cdph:
-            raise ValueError("CA Lab Form and CDPH cannot both be set, they are different report templates.")
+        if (self.caLabForm and self.cdph) or (self.caLabForm and self.cdphOld) or (self.cdph and self.cdphOld):
+            raise ValueError("Only one of CA Lab Form, CDPH Old and CDPH can both be set, they are different report templates.")
         if self.hl7Directory and convertCertificate:
             raise RuntimeError("Error: Program cannot be set to both process a certificate AND take in a directory for upload")
         if testConnection or loinc or snomed:
@@ -138,8 +140,8 @@ def getDuplicateAccessions(resultList:typing.List[zymoTransmitSupport.inputOutpu
     return list(duplicates)
 
 
-def getTestResults(testResultPath:str="results.txt", cdphCSV:bool=False, caLabForm:bool=False):
-    resultList = zymoTransmitSupport.inputOutput.resultReader.loadRawDataTable(testResultPath, cdphCSV, caLabForm)
+def getTestResults(testResultPath:str="results.txt", cdphCSV:bool=False, cdphOld:bool=False, caLabForm:bool=False):
+    resultList = zymoTransmitSupport.inputOutput.resultReader.loadRawDataTable(testResultPath, cdphCSV, cdphOld, caLabForm)
     duplicateAccessions = getDuplicateAccessions(resultList)
     if not duplicateAccessions:
         return resultList
@@ -259,7 +261,7 @@ def prepareAndSendResults(args:CheckArgs):
             print("Using raw HL7 from file %s" %args.input)
             hl7TextBlocks = zymoTransmitSupport.inputOutput.rawHL7.textBlocksFromRawHL7(args.input)
         else:
-            resultList = getTestResults(args.input, args.cdph, args.caLabForm)
+            resultList = getTestResults(args.input, args.cdph, args.cdphOld, args.caLabForm)
             hl7Sets = makeHL7Codes(resultList)
             hl7TextBlocks = makeHL7Blocks(hl7Sets)
     hl7TextRecord = makeHL7TextRecord(hl7TextBlocks)

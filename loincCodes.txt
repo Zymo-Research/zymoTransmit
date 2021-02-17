@@ -12,12 +12,12 @@
 94316-7	SARS-CoV-2 (COVID19) N gene [Presence] in Unspecified specimen by NAA with probe detection	SARS coronavirus 2 N gene	PrThr	Pt	XXX	Ord	Probe.amp.tar
 94500-6	SARS-CoV-2 (COVID19) RNA [Presence] in Respiratory specimen by NAA with probe detection	SARS coronavirus 2 RNA	PrThr	Pt	Respiratory	Ord	Probe.amp.tar
 94502-2	SARS-related coronavirus RNA [Presence] in Respiratory specimen by NAA with probe detection	SARS-related coronavirus RNA	PrThr	Pt	Respiratory	Ord	Probe.amp.tar
-94503-0	"SARS-CoV-2 (COVID19) Ab panel - Serum, Plasma or Blood by Rapid immunoassay"	SARS coronavirus 2 Ab panel	-	Pt	Ser/Plas/Bld	-	IA.rapid
+94503-0	SARS-CoV-2 (COVID19) Ab panel - Serum, Plasma or Blood by Rapid immunoassay	SARS coronavirus 2 Ab panel	-	Pt	Ser/Plas/Bld	-	IA.rapid
 94504-8	SARS-CoV-2 (COVID19) Ab panel - Serum or Plasma by Immunoassay	SARS coronavirus 2 Ab panel	-	Pt	Ser/Plas	-	IA
 94505-5	SARS-CoV-2 (COVID19) IgG Ab [Units/volume] in Serum or Plasma by Immunoassay	SARS coronavirus 2 Ab.IgG	ACnc	Pt	Ser/Plas	Qn	IA
 94506-3	SARS-CoV-2 (COVID19) IgM Ab [Units/volume] in Serum or Plasma by Immunoassay	SARS coronavirus 2 Ab.IgM	ACnc	Pt	Ser/Plas	Qn	IA
-94507-1	"SARS-CoV-2 (COVID19) IgG Ab [Presence] in Serum, Plasma or Blood by Rapid immunoassay"	SARS coronavirus 2 Ab.IgG	PrThr	Pt	Ser/Plas/Bld	Ord	IA.rapid
-94508-9	"SARS-CoV-2 (COVID19) IgM Ab [Presence] in Serum, Plasma or Blood by Rapid immunoassay"	SARS coronavirus 2 Ab.IgM	PrThr	Pt	Ser/Plas/Bld	Ord	IA.rapid
+94507-1	SARS-CoV-2 (COVID19) IgG Ab [Presence] in Serum, Plasma or Blood by Rapid immunoassay	SARS coronavirus 2 Ab.IgG	PrThr	Pt	Ser/Plas/Bld	Ord	IA.rapid
+94508-9	SARS-CoV-2 (COVID19) IgM Ab [Presence] in Serum, Plasma or Blood by Rapid immunoassay	SARS coronavirus 2 Ab.IgM	PrThr	Pt	Ser/Plas/Bld	Ord	IA.rapid
 94509-7	SARS-CoV-2 (COVID19) E gene [Cycle Threshold #] in Unspecified specimen by NAA with probe detection	SARS coronavirus 2 E gene	ThreshNum	Pt	XXX	Qn	Probe.amp.tar
 94510-5	SARS-CoV-2 (COVID19) N gene [Cycle Threshold #] in Unspecified specimen by NAA with probe detection	SARS coronavirus 2 N gene	ThreshNum	Pt	XXX	Qn	Probe.amp.tar
 94511-3	SARS-CoV-2 (COVID19) ORF1ab region [Cycle Threshold #] in Unspecified specimen by NAA with probe detection	SARS coronavirus 2 ORF1ab region	ThreshNum	Pt	XXX	Qn	Probe.amp.tar
@@ -58,7 +58,7 @@
 94765-5	SARS-CoV-2 (COVID19) E gene [Presence] in Serum or Plasma by NAA with probe detection	SARS coronavirus 2 E gene	PrThr	Pt	Ser/Plas	Ord	Probe.amp.tar
 94766-3	SARS-CoV-2 (COVID19) N gene [Presence] in Serum or Plasma by NAA with probe detection	SARS coronavirus 2 N gene	PrThr	Pt	Ser/Plas	Ord	Probe.amp.tar
 94767-1	SARS-CoV-2 (COVID19) S gene [Presence] in Serum or Plasma by NAA with probe detection	SARS coronavirus 2 S gene	PrThr	Pt	Ser/Plas	Ord	Probe.amp.tar
-94768-9	"SARS-CoV-2 (COVID19) IgA Ab [Presence] in Serum, Plasma or Blood by Rapid immunoassay"	SARS coronavirus 2 Ab.IgA	PrThr	Pt	Ser/Plas/Bld	Ord	IA.rapid
+94768-9	SARS-CoV-2 (COVID19) IgA Ab [Presence] in Serum, Plasma or Blood by Rapid immunoassay	SARS coronavirus 2 Ab.IgA	PrThr	Pt	Ser/Plas/Bld	Ord	IA.rapid
 94769-7	SARS-CoV-2 (COVID19) Ab [Units/volume] in Serum or Plasma by Immunoassay	SARS coronavirus 2 Ab	ACnc	Pt	Ser/Plas	Qn	IA
 94819-0	SARS-CoV-2 (COVID19) RNA [Log #/volume] (viral load) in Unspecified specimen by NAA with probe detection	SARS coronavirus 2 RNA	LnCnc	Pt	XXX	Qn	Probe.amp.tar
 94822-4	SARS-CoV-2 (COVID19) RNA [Presence] in Saliva (oral fluid) by Sequencing	SARS coronavirus 2 RNA	PrThr	Pt	Saliva	Ord	Sequencing
@@ -70,3 +70,10 @@
 95410-7	SARS-CoV-2 (COVID19) neutralizing antibody [Titer] in Serum by pVNT	SARS coronavirus 2 Ab.neut	Titr	Pt	Ser	Qn	pVNT
 95411-5	SARS-CoV-2 (COVID19) neutralizing antibody [Presence] in Serum by pVNT	SARS coronavirus 2 Ab.neut	PrThr	Pt	Ser	Ord	pVNT
 95424-8	SARS-CoV-2 (COVID-19) RNA [Presence] in Respiratory specimen by Sequencing	SARS coronavirus 2 RNA	PrThr	Pt	Respiratory	Ord	Sequencing
+95425-5	SARS-CoV-2 (COVID-19) N gene [Presence] in Saliva (oral fluid) by NAA with probe detection	SARS coronavirus 2 N gene	PrThr	Pt	Saliva	Ord	Probe.amp.tar
+95429-7	SARS-CoV-2 (COVID-19) IgG Ab [Titer] in Serum or Plasma by Immunofluorescence	SARS coronavirus 2 Ab.IgG	Titr	Pt	Ser/Plas	Qn	IF
+95416-4	SARS-CoV-2 (COVID-19) IgM Ab [Presence] in DBS by Immunoassay	SARS coronavirus 2 Ab.IgM	PrThr	Pt	Bld.dot	Ord	IA
+95428-9	SARS-CoV-2 (COVID-19) IgM Ab [Titer] in Serum or Plasma by Immunofluorescence	SARS coronavirus 2 Ab.IgM	Titr	Pt	Ser/Plas	Qn	IF
+41458-1	SARS coronavirus RNA [Presence] in Unspecified specimen by NAA with probe detection	SARS coronavirus RNA	PrThr	Pt	XXX	Ord	Probe.amp.tar
+88719-0	Human coronavirus 229E+HKU1+NL63+OC43 RNA [Presence] in Nasopharynx by NAA with probe detection	Human coronavirus 229E+HKU1+NL63+OC43 RNA	PrThr	Pt	Nph	Ord	Probe.amp.tar
+41460-7	SARS coronavirus IgG Ab [Presence] in Serum by Immunoassay	SARS coronavirus Ab.IgG	PrThr	Pt	Ser	Ord	IA
