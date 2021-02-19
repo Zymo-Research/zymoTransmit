@@ -317,5 +317,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    input("Completed successfully. Press enter to quit.")
+    input("Done. Press enter to quit.")
     quit()
