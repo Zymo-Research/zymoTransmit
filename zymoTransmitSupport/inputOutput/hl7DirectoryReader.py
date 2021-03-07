@@ -46,6 +46,6 @@ def makeHL7BlocksFromDirectory(targetDirectory:str):
     filteredFiles = getFileList(targetDirectory)
     for baseName, fullPath in filteredFiles:
         rawBlock = open(fullPath).read()
-        hl7Blocks[("Batch HL7", baseName)] = processRawHL7Block(rawBlock)
+        hl7Blocks[("Batch HL7: %s" %baseName)] = processRawHL7Block(rawBlock)
     return hl7Blocks
 
