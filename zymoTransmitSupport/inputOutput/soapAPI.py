@@ -45,7 +45,7 @@ def transmitBlocks(client:zeep.Client, hl7Blocks:dict, resultList:typing.List[re
     def makeResultKey():
         resultKey = {}
         for index, result in enumerate(resultList):
-            key = result.accession
+            key = "%s:%s" %(result.accession, result.testLOINC)
             resultKey[key] = index
         return resultKey
     if resultList is None:
