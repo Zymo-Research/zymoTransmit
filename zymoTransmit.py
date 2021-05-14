@@ -152,9 +152,9 @@ def getTestResults(testResultPath:str="results.txt", cdphCSV:bool=False, cdphOld
 def makeHL7Codes(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult]):
     hl7Sets = {}
     for result in resultList:
-        currentAccession = result.accession
-        hl7Sets[currentAccession] = []
-        currentSet = hl7Sets[currentAccession]
+        currentIdentifier = "%s:%s" %(result.accession, result.testLOINC)
+        hl7Sets[currentIdentifier] = []
+        currentSet = hl7Sets[currentIdentifier]
         currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makeMSHLine(result))
         currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makeSFTLine())
         currentSet.append(zymoTransmitSupport.hl7Encoder.encoders.makePIDLine(result))
@@ -168,7 +168,7 @@ def makeHL7Codes(resultList:typing.List[zymoTransmitSupport.inputOutput.resultRe
             print("Skipping preparation of %s:%s for the following reasons:" %(result.patientID, result.specimenID))
             for reason in result.reasonForFailedTransmission:
                 print("\t%s" %reason)
-            del hl7Sets[currentAccession]
+            del hl7Sets[currentIdentifier]
     return hl7Sets
 
 
