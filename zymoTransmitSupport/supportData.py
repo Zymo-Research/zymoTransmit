@@ -1,4 +1,4 @@
 
-softwareVersion = "2.1.1"
+softwareVersion = "2.2.0"
 
-softwareDate = "20210307"
+softwareDate = "20210514"
