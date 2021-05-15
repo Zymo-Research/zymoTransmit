@@ -129,24 +129,25 @@ def convertPFX(pfxPath:str, pfxPassword:str=None):
     return pemPath
 
 
-def getDuplicateAccessions(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult]):
+def getDuplicateIdentifiers(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult]):
     accessionSet = set()
     duplicates = set()
     for result in resultList:
-        if not result.accession in accessionSet:
-            accessionSet.add(result.accession)
+        identifier = "%s:%s" %(result.accession, result.testLOINC)
+        if not identifier in accessionSet:
+            accessionSet.add(identifier)
         else:
-            duplicates.add(result.accession)
+            duplicates.add(identifier)
     return list(duplicates)
 
 
 def getTestResults(testResultPath:str="results.txt", cdphCSV:bool=False, cdphOld:bool=False, caLabForm:bool=False):
     resultList = zymoTransmitSupport.inputOutput.resultReader.loadRawDataTable(testResultPath, cdphCSV, cdphOld, caLabForm)
-    duplicateAccessions = getDuplicateAccessions(resultList)
-    if not duplicateAccessions:
+    duplicateIdentifiers = getDuplicateIdentifiers(resultList)
+    if not duplicateIdentifiers:
         return resultList
     else:
-        raise KeyError("Submission list cannot contain duplicate identifiers. Unique accession numbers are required or unique patient ID/specimen ID combos.\nDuplicate values: %s" %duplicateAccessions)
+        raise KeyError("Submission list cannot contain duplicate identifiers. Unique accession/LOINC numbers are required or unique patient ID/specimen ID/LOINC combos.\nDuplicate values: %s" %duplicateIdentifiers)
 
 
 def makeHL7Codes(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult]):
