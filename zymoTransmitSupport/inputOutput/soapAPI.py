@@ -2,6 +2,7 @@ import zeep
 from .. import config as defaultConfig
 from . import resultReader
 import typing
+import collections
 
 config = defaultConfig
 
@@ -83,7 +84,11 @@ def transmitBlocks(client:zeep.Client, hl7Blocks:dict, resultList:typing.List[re
                     resultList[resultKey[accession]].transmittedSuccessfully = True
             else:
                 submissionStatus = SubmissionStatus(accession, False, getattr(response, "return"))
-                print("ERROR: attempted to submit %s, but it was rejected. See submission log for more details." %accession)
+                if type(accession) in [tuple, list, set]:
+                    displayAccession = ":".join([str(item) for item in accession])
+                else:
+                    displayAccession = accession
+                print("ERROR: attempted to submit %s, but it was rejected. See submission log for more details." %displayAccession)
                 if accession in resultKey:
                     resultList[resultKey[accession]].transmittedSuccessfully = False
                     resultList[resultKey[accession]].reasonForFailedTransmission.append("Gateway rejected transmission. This indicates a likely error in the data and requires some correction before attempting to transmit again. See the log file for specific errors.")
