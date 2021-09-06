@@ -1,4 +1,5 @@
 import time
+import pytz
 import os
 import re
 
@@ -63,7 +64,7 @@ class LabInfo:
     country = configDict.setdefault("lab country", "")
     clia = configDict.setdefault("lab clia id", "")
     iso = configDict.setdefault("lab iso", "")
-    gmt_offset = time.timezone/(60*60)
+    timezone = configDict.setdefault("timezone", "US/Pacific")
 
 
 class LabDirectorInfo:

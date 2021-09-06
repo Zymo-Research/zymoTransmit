@@ -73,7 +73,7 @@ class ProviderContact(generics.TelephoneNumberOrEmail):
 
 
 class OrderEffectiveTime(generics.DateAndTime):
-    pass
+    includeSeconds = True
 
 
 class OrderControlCodeReason(Hl7Field):

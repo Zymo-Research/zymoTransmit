@@ -3,7 +3,7 @@ import re
 import json
 import os
 import zipcodes
-import time
+import pytz
 from .. import config
 
 def loadFIPSData():
@@ -126,14 +126,21 @@ class Date(Hl7Field):
         self.subfields = [dateString]
 
 
+def calculateGMTOffset(timezone:str, date:datetime.datetime=datetime.datetime.now()):
+    timezoneObject = pytz.timezone(timezone)
+    dateDSTCorrection = timezoneObject.localize(date)
+    utcOffsetString = dateDSTCorrection.strftime("%z")
+    return utcOffsetString
+
 class Time(Hl7Field):
 
     includeSeconds = None
 
-    def __init__(self, hour:int, minute:int, second:int=0, gmtOffset:[str, int, tuple]=config.LabInfo.gmt_offset, includeSeconds:bool=True, includeOffset:bool=True):
+    def __init__(self, hour:int, minute:int, second:int=0, timezone=config.LabInfo.timezone, includeSeconds:bool=True, includeOffset:bool=True, date:datetime.datetime=datetime.datetime.now()):
         self.hour = str(hour).zfill(2)
         self.minute = str(minute).zfill(2)
         self.second = str(second).zfill(2)
+        self.offset = calculateGMTOffset(timezone)
         if not self.includeSeconds is None:
             includeSeconds = self.includeSeconds
         if includeSeconds:
@@ -143,61 +150,21 @@ class Time(Hl7Field):
         if not includeOffset:
             offsetString = ""
         else:
-            self.offSet = self.processOffset(gmtOffset)
-            offsetString = "%s" %(self.offSet)
-        timeString = self.hour + self.minute + secondString + "-" + offsetString
+            offsetString = self.offset
+        timeString = self.hour + self.minute + secondString + offsetString
         self.subfields = [timeString]
-
-    def processOffset(self, gmtOffset:[str, int, float, tuple]=0):
-        if type(gmtOffset) == float:
-            gmtOffset = int(gmtOffset)
-        if type(gmtOffset) == str:
-            if len(gmtOffset) == 0:
-                return "0000"
-            elif len(gmtOffset) == 1:
-                return "0" + gmtOffset + "00"
-            elif len(gmtOffset) == 2:
-                return gmtOffset + "00"
-            elif len(gmtOffset) == 3:
-                return "0" + gmtOffset
-            elif len(gmtOffset) == 4:
-                return gmtOffset
-            else:
-                raise ValueError("Offset cannot be more than 4 characters")
-        if type(gmtOffset) == int:
-            if gmtOffset < 100:
-                hours = str(gmtOffset).zfill(2)
-                return hours + "00"
-            elif gmtOffset < 1500:
-                return str(gmtOffset).zfill(4)
-            else:
-                raise ValueError("Offset cannot be greater than 1500")
-        else:
-            if len(gmtOffset) == 0:
-                return "0000"
-            elif len(gmtOffset) == 1:
-                return str(gmtOffset[0]).zfill(2) + "00"
-            elif len(gmtOffset) == 2:
-                hours, minutes = gmtOffset
-                hours = str(hours).zfill(2)
-                if minutes:
-                    minutes = str(minutes).zfill(2)
-                else:
-                    minutes = "00"
-                return hours + minutes
-            else:
-                raise ValueError("Offset cannot have more than two elements in the tuple")
 
 
 class DateAndTime(Hl7Field):
 
     includeSeconds = None
 
-    def __init__(self, year:int, month:int, day:int, hour:int=0, minute:int=0, second:int=0, gmtOffset:int=config.LabInfo.gmt_offset, includeSeconds:bool=False, includeOffset:bool=True):
+    def __init__(self, year:int, month:int, day:int, hour:int=0, minute:int=0, second:int=0, timezone=config.LabInfo.timezone, includeSeconds:bool=False, includeOffset:bool=True):
         if not self.includeSeconds is None:
             includeSeconds = self.includeSeconds
         dateString = str(Date(year, month, day))
-        timeString = str(Time(hour, minute, second, gmtOffset, includeSeconds, includeOffset))
+        dateObj = datetime.datetime(year, month, day)
+        timeString = str(Time(hour, minute, second, timezone, includeSeconds, includeOffset, dateObj))
         dateAndTimeString = dateString + timeString
         self.subfields = [dateAndTimeString]
 
