@@ -48,7 +48,6 @@ class RequestedDateTime(Hl7Field):
 
 class ObservedDateTime(generics.DateAndTime):
     includeSeconds = True
-    pass
 
 
 class ObservationEndDateTime(Hl7Field):

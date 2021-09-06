@@ -19,6 +19,7 @@ Lab Zip:
 Lab Country: USA
 Lab CLIA ID:
 Lab ISO: 2.16.840.1.113883.4.7
+Timezone: US/Pacific
 
 ## Information on your medical director
 MD Last Name:
