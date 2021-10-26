@@ -332,9 +332,8 @@ def loadCSVDataTable(filePath: str, cdphCSV:bool=False, cdphOld:bool=False, caLa
     if probeBytes == b'\xef\xbb\xbf':
         resultsFile = open(filePath, 'r', encoding='utf-8-sig')
         utf8 = True
-        print("WARNING: This CSV appears to use UTF-8 encoding. This may cause errors. Please use plain ASCII (standard) CSV format in the future.")
     else:
-        resultsFile = open(filePath, 'r')
+        resultsFile = open(filePath, 'r', encoding='utf-8')
         utf8 = False
     csvHandle = csv.reader(resultsFile)
     currentLine = 0

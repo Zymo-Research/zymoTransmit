@@ -32,7 +32,7 @@ def writeLogFile(logFolder:str, submissionResults: typing.List[soapAPI.Submissio
     outputFile.write(outputText)
     outputFile.close()
     filePath = os.path.join(logFolder, resultFileName)
-    outputFile = open(filePath, 'w')
+    outputFile = open(filePath, 'w', encoding="utf-8")
     outputFile.write(resultText)
     outputFile.close()
     return outputText
