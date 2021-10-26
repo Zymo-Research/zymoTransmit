@@ -190,7 +190,7 @@ def makeHL7TextRecord(hl7Blocks:typing.Dict[str, str]):
 
 
 def processRejects(resultList:typing.List[zymoTransmitSupport.inputOutput.resultReader.TestResult], delimiter:str="\t"):
-    file = open(os.path.join(contentRoot, "rejects.csv"), 'a', newline="")
+    file = open(os.path.join(contentRoot, "rejects.csv"), 'a', newline="", encoding="utf-8")
     for result in resultList:
         csvHandle = csv.writer(file)
         if result.okToTransmit and result.transmittedSuccessfully:
