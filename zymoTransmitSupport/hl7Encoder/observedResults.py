@@ -69,7 +69,7 @@ def getAbnormalityObject(result:str):
     if result == "detected":
         return generics.SystemCode(code="A", text="Abnormal", coding="HL70078", codingSystemDateOrVersion="2.7")
     elif result == "indeterminate":
-        return generics.SystemCode(code="A", text="Abnormal", coding="HL70078", codingSystemDateOrVersion="2.7")
+        return generics.SystemCode(code="N", text="Normal", coding="HL70078", codingSystemDateOrVersion="2.7")
     elif result == "negative":
         return generics.SystemCode(code="N", text="Normal", coding="HL70078", codingSystemDateOrVersion="2.7")
     elif result == "unsatisfactory":
