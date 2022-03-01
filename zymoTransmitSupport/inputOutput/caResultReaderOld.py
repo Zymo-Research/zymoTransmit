@@ -1,10 +1,12 @@
 import os
 import datetime
 import re
-import collections
+import typing
 from . import resultReader
 
+
 loincRegex = re.compile(r"^\d{5}-\d$")
+
 
 def makeSpecimenRegexes():
     nasalTerms = ["NASO", "NOSE", "NASAL", "NPNX", r"\WNP\W", r"^NP\W", r"\WNP$", r"^NP$"]
@@ -40,11 +42,11 @@ snomedList = getSnomedList()
 class CATestResult(object):
     expectedElements = 40
 
-    def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
+    def __init__(self, rawLine: [str, typing.List[str]], delimiter: str = "\t"):
         self.rawLine = rawLine
         if type(self.rawLine) == str:
             self.elementArray = self.processRawLine(delimiter)
-        elif isinstance(rawLine, collections.Iterable):
+        elif hasattr(rawLine, "__iter__"):
             self.elementArray = self.processList(self.rawLine)
         (self.sendingApplication,
          self.facilityName,
