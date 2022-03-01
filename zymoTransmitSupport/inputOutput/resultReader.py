@@ -2,7 +2,6 @@ import os
 import datetime
 import re
 import zipcodes
-import collections
 import csv
 import typing
 from . import caResultReaderOld
@@ -13,7 +12,7 @@ from . import caLabResultTemplateReader
 class TestResult(object):
     expectedElements = 41
 
-    def __init__(self, rawLine: [str, collections.Iterable], delimiter: str = "\t"):
+    def __init__(self, rawLine: [str, typing.List[str]], delimiter: str = "\t"):
         self.okToTransmit = True
         self.reasonForFailedTransmission = []
         self.transmittedSuccessfully = None
@@ -21,7 +20,7 @@ class TestResult(object):
         if type(self.rawLine) == str:
             self.rawLine = self.rawLine.strip()
             self.elementArray = self.processRawLine(delimiter)
-        elif isinstance(rawLine, collections.Iterable):
+        elif hasattr(rawLine, "__iter__"):
             self.elementArray = self.processList(self.rawLine)
         (self.patientID,
          self.patientLastName,
