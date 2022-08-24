@@ -203,7 +203,13 @@ def processRejects(resultList:typing.List[zymoTransmitSupport.inputOutput.result
 
 
 def selectCertificatePath():
-    if config.Connection.usingOptum:
+    if config.Connection.usingSaphire:
+        certFile = config.Connection.saphireCertificate
+        keyFile = config.Connection.saphireKey
+        certPath = os.path.join(contentRoot, config.Connection.certificateFolder, certFile)
+        keyPath = os.path.join(contentRoot, config.Connection.certificateFolder, keyFile)
+        certificateFilePath = (certPath, keyPath)
+    elif config.Connection.usingOptum:
         if config.Configuration.productionReady:
             certFile = config.Connection.optumProductionCertificate
             keyFile = config.Connection.optumProductionKey
@@ -219,6 +225,11 @@ def selectCertificatePath():
 
 
 def selectURLForWSDL():
+    if config.Connection.usingSaphire:
+        if config.Configuration.productionReady:
+            wsdlURL = config.Connection.saphireProductionWSDLURL
+        else:
+            wsdlURL = config.Connection.saphireStagingWSDLURL
     if config.Connection.usingOptum:
         if config.Configuration.productionReady:
             relativePath = os.path.join(config.Connection.localWSDLFolder, config.Connection.optumProductionWSDL)

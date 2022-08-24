@@ -39,7 +39,14 @@ def lowLevelBlockTransmitter(session:requests.Session, hl7Blocks:dict):
             </soap:Body>\
             </soap:Envelope>' %fillers
         message = message.replace("    ", "")
-        request = requests.Request("POST", config.Connection.submissionURL, data=message)
+        if config.Connection.usingSaphire:
+            if config.Configuration.productionReady:
+                submissionURL = config.Connection.saphireProductionURL
+            else:
+                submissionURL = config.Connection.saphireStagingURL
+        elif config.Connection.usingOptum:
+            submissionURL = config.Connection.submissionURL
+        request = requests.Request("POST", submissionURL, data=message)
         preparedRequest = request.prepare()
         testResp = requests.get(config.Connection.wsdlURL, cert=certificateFile)
         response = session.send(preparedRequest, cert=certificateFile)

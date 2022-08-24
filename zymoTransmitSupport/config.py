@@ -98,7 +98,7 @@ class Connection:
     certificateFileName = configDict.setdefault("certificate file name", "")
     userName = configDict.setdefault("gateway user", "")
     password = configDict.setdefault("gateway password", "")
-    usingOptum = configDict.setdefault("using optum", False)
+    usingOptum = configDict.setdefault("using optum", True)
     localWSDLFolder = configDict.setdefault("local wsdl folder", "")
     optumTestingWSDL = configDict.setdefault("optum testing wsdl file", "")
     optumProductionWSDL = configDict.setdefault("optum production wsdl file", "")
@@ -106,6 +106,13 @@ class Connection:
     optumTestingKey = configDict.setdefault("optum testing key", "")
     optumProductionCertificate = configDict.setdefault("optum production certificate", "")
     optumProductionKey = configDict.setdefault("optum production key", "")
+    usingSaphire = configDict.setdefault("using saphire", False)
+    saphireProductionURL = configDict.setdefault("saphire production url", "")
+    saphireStagingURL = configDict.setdefault("saphire staging url", "")
+    saphireProductionWSDLURL = configDict.setdefault("saphire production wsdl url", "")
+    saphireStagingWSDLURL = configDict.setdefault("saphire staging wsdl url", "")
+    saphireCertificate = configDict.setdefault("saphire certificate", "")
+    saphireKey = configDict.setdefault("saphire key", "")
 
 
 class Configuration:
