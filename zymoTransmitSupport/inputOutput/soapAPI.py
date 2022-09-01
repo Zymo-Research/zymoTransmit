@@ -68,7 +68,7 @@ def transmitBlocks(client:zeep.Client, hl7Blocks:dict, resultList:typing.List[re
                 cdphprogramid = 1,
                 cdphprogramenvironment = productionCode,
                 action = "SEND",
-                messagecontent = "<![CDATA[%s]]" %text
+                messagecontent = "<![CDATA[%s]]>" %text
             )
         except Exception as err:
             submissionStatus = SubmissionStatus(accession, None, str(err))

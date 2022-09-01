@@ -206,9 +206,11 @@ def selectCertificatePath():
     if config.Connection.usingSaphire:
         certFile = config.Connection.saphireCertificate
         keyFile = config.Connection.saphireKey
+        certChain = config.Connection.saphireChain
         certPath = os.path.join(contentRoot, config.Connection.certificateFolder, certFile)
         keyPath = os.path.join(contentRoot, config.Connection.certificateFolder, keyFile)
-        certificateFilePath = (certPath, keyPath)
+        chainPath = os.path.join(contentRoot, config.Connection.certificateFolder, certChain)
+        certificateFilePath = (certPath, keyPath, chainPath)
     elif config.Connection.usingOptum:
         if config.Configuration.productionReady:
             certFile = config.Connection.optumProductionCertificate
@@ -230,7 +232,7 @@ def selectURLForWSDL():
             wsdlURL = config.Connection.saphireProductionWSDLURL
         else:
             wsdlURL = config.Connection.saphireStagingWSDLURL
-    if config.Connection.usingOptum:
+    elif config.Connection.usingOptum:
         if config.Configuration.productionReady:
             relativePath = os.path.join(config.Connection.localWSDLFolder, config.Connection.optumProductionWSDL)
         else:

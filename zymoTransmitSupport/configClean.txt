@@ -79,6 +79,7 @@ SaPHIRE Production WSDL URL: https://saphiresoap.cdph.ca.gov/services/HL7SOAPEnd
 SaPHIRE Staging WSDL URL: https://saphiresoapstage.cdph.ca.gov/services/HL7SOAPEndPointSvc?wsdl
 SaPHIRE Certificate: saphire.pem
 SaPHIRE Key: saphire.key
+SaPHIRE Cert Chain: saphireChain.pem
 
 
 ## Message Header Values

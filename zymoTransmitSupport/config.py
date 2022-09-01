@@ -113,6 +113,7 @@ class Connection:
     saphireStagingWSDLURL = configDict.setdefault("saphire staging wsdl url", "")
     saphireCertificate = configDict.setdefault("saphire certificate", "")
     saphireKey = configDict.setdefault("saphire key", "")
+    saphireChain = configDict.setdefault("saphire cert chain", "")
 
 
 class Configuration:
