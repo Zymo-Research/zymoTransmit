@@ -1,9 +1,13 @@
+import xml.etree.ElementTree
+
+import lxml.etree
 import requests
 import os
 import zeep
 import ssl
 import requests.adapters
 import requests.packages.urllib3
+from xml import etree
 
 strongSSLCipherSuiteEnforcement = True
 permittedCipherSuites = 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256'
@@ -20,6 +24,16 @@ class TLSEnforcer(requests.adapters.HTTPAdapter):
         self.poolmanager = requests.packages.urllib3.poolmanager.PoolManager(*pool_args, ssl_context=sslSettings, **pool_kwargs)
 
 
+class RawCdataSender(zeep.Transport):
+
+    def post_xml(self, address, envelope, headers):
+        message = xml.etree.ElementTree.tostring(envelope, encoding="unicode")
+        message = message.replace("&lt;", "<")
+        message = message.replace("&gt;", ">")
+        message = message.replace("&amp;", "&")
+        return self.post(address, message, headers)
+
+
 
 def getSOAPClient(wsdlURL:str, clientCertificatePath:str=None, dumpClientInfo:bool=False, testOnly:bool=False):
     session = requests.Session()
@@ -31,15 +45,23 @@ def getSOAPClient(wsdlURL:str, clientCertificatePath:str=None, dumpClientInfo:bo
                 raise FileNotFoundError("Unable to find client certificate path at %s" %clientCertificatePath)
         else:
             if type(clientCertificatePath) in [tuple, list]:
-                if not len(clientCertificatePath) == 2:
-                    raise ValueError("List/tuple certificate paths should have exactly two elements with the first being the certificate and second being key.")
-                certPath, keyPath = clientCertificatePath
+                if len(clientCertificatePath) == 3:
+                    certPath, keyPath, certChain = clientCertificatePath
+                    clientCertificatePath = certPath, keyPath
+                    if not os.path.isfile(certChain):
+                        raise FileNotFoundError("Unable to find local certificate chain at %s" %certChain)
+                    session.verify = certChain
+                elif len(clientCertificatePath) == 2:
+                    certPath, keyPath = clientCertificatePath
+                else:
+                    raise ValueError("List/tuple certificate paths should have exactly two or three elements with the first being the certificate and second being key. The third may be a cert chain if needed.")
                 if not os.path.isfile(certPath) or not os.path.isfile(keyPath):
                     raise FileNotFoundError("Unable to find client certificate and/or key path.\nCert: %s\nKey: %s" %(certPath, keyPath))
         session.cert = clientCertificatePath
     transport = zeep.transports.Transport(session=session, timeout=30)
     try:
-        client = zeep.Client(wsdlURL, transport=transport)
+        #client = zeep.Client(wsdlURL, transport=transport)
+        client = zeep.Client("file://C:/Users/mweinstein/PycharmProjects/zymoTransmit/wsdl/saphire_soap_wsdl.xml", transport=RawCdataSender(session=session, timeout=30))
     except OSError:
         wsdlURL = wsdlURL.replace("file:///", "file://")  # Seems like a weird quirk on windows where it wants to add a root / to the URI.  Might be a bug somewhere I need to report.  Actually, fixed in the latest zeep major release.
         client = zeep.Client(wsdlURL, transport=transport)

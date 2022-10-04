@@ -376,6 +376,10 @@ def makeSPMLine(result:inputOutput.resultReader.TestResult):
         specimenData.preferredName,
         "SNOMED"
     )
+    specimenType.altIDSystem="L"
+    specimenType.subfields[3] = "None"
+    specimenType.subfields[4] = "None"
+    specimenType.subfields[5] = "L"
     specimenCollectionDateTime = specimen.SpecimenCollectionDateTime(
         result.collectionDateTime.year,
         result.collectionDateTime.month,

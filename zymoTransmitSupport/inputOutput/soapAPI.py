@@ -2,7 +2,7 @@ import zeep
 from .. import config as defaultConfig
 from . import resultReader
 import typing
-import collections
+
 
 config = defaultConfig
 
@@ -68,7 +68,7 @@ def transmitBlocks(client:zeep.Client, hl7Blocks:dict, resultList:typing.List[re
                 cdphprogramid = 1,
                 cdphprogramenvironment = productionCode,
                 action = "SEND",
-                messagecontent = "<![CDATA[%s]]" %text
+                messagecontent = "<![CDATA[%s]]>" %text
             )
         except Exception as err:
             submissionStatus = SubmissionStatus(accession, None, str(err))
@@ -80,6 +80,11 @@ def transmitBlocks(client:zeep.Client, hl7Blocks:dict, resultList:typing.List[re
             if response.status == "VALID":
                 submissionStatus = SubmissionStatus(accession, True, getattr(response, "return"))
                 print("Successfully submitted %s" %accession)
+                if accession in resultKey:
+                    resultList[resultKey[accession]].transmittedSuccessfully = True
+            elif hasattr(response, "return") and ("MSA|AA" in getattr(response, "return") or "MSA|AE" in getattr(response, "return")):
+                submissionStatus = SubmissionStatus(accession, True, getattr(response, "return"))
+                print("Successfully submitted %s" % accession)
                 if accession in resultKey:
                     resultList[resultKey[accession]].transmittedSuccessfully = True
             else:
