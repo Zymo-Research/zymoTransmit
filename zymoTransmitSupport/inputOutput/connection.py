@@ -58,10 +58,10 @@ def getSOAPClient(wsdlURL:str, clientCertificatePath:str=None, dumpClientInfo:bo
                 if not os.path.isfile(certPath) or not os.path.isfile(keyPath):
                     raise FileNotFoundError("Unable to find client certificate and/or key path.\nCert: %s\nKey: %s" %(certPath, keyPath))
         session.cert = clientCertificatePath
-    transport = zeep.transports.Transport(session=session, timeout=30)
+    transport=RawCdataSender(session=session, timeout=30)
     try:
-        #client = zeep.Client(wsdlURL, transport=transport)
-        client = zeep.Client("file://C:/Users/mweinstein/PycharmProjects/zymoTransmit/wsdl/saphire_soap_wsdl.xml", transport=RawCdataSender(session=session, timeout=30))
+        client = zeep.Client(wsdlURL, transport=transport)
+        #client = zeep.Client("file://C:/Users/mweinstein/PycharmProjects/zymoTransmit/wsdl/saphire_soap_wsdl.xml", transport=transport)
     except OSError:
         wsdlURL = wsdlURL.replace("file:///", "file://")  # Seems like a weird quirk on windows where it wants to add a root / to the URI.  Might be a bug somewhere I need to report.  Actually, fixed in the latest zeep major release.
         client = zeep.Client(wsdlURL, transport=transport)
