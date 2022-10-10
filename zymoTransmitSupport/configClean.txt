@@ -75,8 +75,8 @@ Optum Production Key: odxi-ws.key
 Using SaPHIRE: FALSE
 SaPHIRE Production URL: https://saphiresoap.cdph.ca.gov/services/HL7SOAPEndPointSvc
 SaPHIRE Staging URL: https://saphiresoapstage.cdph.ca.gov/services/HL7SOAPEndPointSvc
-SaPHIRE Production WSDL URL: https://saphiresoap.cdph.ca.gov/services/HL7SOAPEndPointSvc?wsdl
-SaPHIRE Staging WSDL URL: https://saphiresoapstage.cdph.ca.gov/services/HL7SOAPEndPointSvc?wsdl
+SaPHIRE Production WSDL URL: https://saphiresoap.cdph.ca.gov/services/HL7SOAPEndPointSvc?wsdl=optum
+SaPHIRE Staging WSDL URL: https://saphiresoapstage.cdph.ca.gov/services/HL7SOAPEndPointSvc?wsdl=optum
 SaPHIRE Certificate: saphire.pem
 SaPHIRE Key: saphire.key
 SaPHIRE Cert Chain: saphireChain.pem
