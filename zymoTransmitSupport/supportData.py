@@ -1,4 +1,4 @@
 
-softwareVersion = "3.0.1"
+softwareVersion = "3.1.0"
 
-softwareDate = "20221010"
+softwareDate = "19AUG2023"
