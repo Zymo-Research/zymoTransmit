@@ -28,6 +28,9 @@ try:
         quit()
 
     import zymoTransmitSupport
+    import urllib3
+
+    urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)  #suppress the altname warning in this library
 
 except Exception as err:
     print("Encountered an unhandled error as follows:")
