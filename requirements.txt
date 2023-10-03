@@ -2,4 +2,4 @@ pyOpenSSL==23.1.1
 zipcodes==1.2.0
 zeep==4.2.1
 pytk==0.0.2.1
-urllib3==1.26.15
+urllib3==1.26.17
